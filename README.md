@@ -116,18 +116,17 @@ python3 execute_metquest.py <path containing the input folder>
 
 ### From python console
 
-``` {.sourceCode .python}
+``` 
 >>>import metquest
->>>metquest.execute\_all\_codes()```
+>>>metquest.execute_all_codes()```
 
-When prompted, enter the path containing the folder with all the data
-files
+When prompted, enter the path containing the folder with all the data files
 
 ### Running examples
 
 In the python console, type the following
 
-``` {.sourceCode .python}
+```
 >>>import metquest
 >>>metquest.example.run\_this\_example()```
 
