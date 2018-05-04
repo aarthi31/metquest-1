@@ -34,7 +34,7 @@ copyright = '2018, Aarthi Ravikrishnan'
 author = 'Aarthi Ravikrishnan'
 
 # The short X.Y version
-version = '0.1'
+version = ''
 # The full version, including alpha/beta/rc tags
 release = '0.1.28'
 
