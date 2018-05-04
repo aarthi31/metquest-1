@@ -1,5 +1,0 @@
-cobra
-numpy
-scipy
-networkx>=2.1
-python-libsbml
