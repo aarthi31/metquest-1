@@ -183,11 +183,14 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 
 def run_apidoc(_):
     from sphinx.apidoc import main
-
-    mod_path = join(PROJECT_ROOT, 'metquest')
-    auto_path = join(DOCS_ROOT, '_autogen')
-    main([None, '-f', '-d', '2', '-e', '-o', auto_path, mod_path])
-
+    import os
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    cur_dir = os.path.abspath(os.path.dirname(__file__))
+    module = '.'
+    output_path = os.path.join(cur_dir, 'source')
+    # main(['-e', '-o', output_path, module, '--force'])
 
 def setup(app):
     app.connect('builder-inited', run_apidoc)
+    
