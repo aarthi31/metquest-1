@@ -24,9 +24,9 @@ Direct installation
 
 .. code:: bash
 
-    python3 setup.py install
+    python setup.py install
 
-(Elevated ``sudo`` rights may be required depending on the platform)
+(Elevated ``sudo`` rights may be required depending on the platform. Replace python with python3 when multiple python distributions are found.)
 
 
 Required python packages
@@ -68,14 +68,16 @@ MetQuest can be directly run from the terminal as
 
 .. code:: bash
 
-    metquest.bash <path containing the input folder>
+    metquest.sh <path containing the input folder>
 
 
 Navigate to the folder where metquest is installed and type
 
 .. code:: bash
 
-    python3 execute_metquest.py <path containing the input folder>
+    python execute_metquest.py <path containing the input folder>
+
+(Replace python with python3 when multiple python distributions are found.)
 
 
 From python console
