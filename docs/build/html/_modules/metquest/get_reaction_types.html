@@ -1,0 +1,370 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>metquest.get_reaction_types &mdash; metquest 0.1.26 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> metquest
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installing.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">MetQuest modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">metquest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>metquest.get_reaction_types</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for metquest.get_reaction_types</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="find_different_reaction_types"><a class="viewcode-back" href="../../modules.html#metquest.get_reaction_types.find_different_reaction_types">[docs]</a><span class="k">def</span> <span class="nf">find_different_reaction_types</span><span class="p">(</span><span class="n">stoi_matrix</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">current_model_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function finds the exchange, irreversible and the reversible reactions</span>
+<span class="sd">    from the model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stoi_matrix : numpy array</span>
+<span class="sd">        full path name where the model files are</span>
+<span class="sd">    model : COBRA model object</span>
+<span class="sd">        COBRA model object created from SBML models</span>
+<span class="sd">    current_model_name : str</span>
+<span class="sd">        Name which is to be prefixed against every</span>
+<span class="sd">        reaction/metabolite (to differentiate the entries in multiple organisms,</span>
+<span class="sd">        when a community model is built)</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    exchange_met_ids : list</span>
+<span class="sd">        Metabolite identifiers of exchange metabolites</span>
+<span class="sd">    irrev_lhs_nodes : list</span>
+<span class="sd">        Metabolite identifiers of reactants of irreversible reactions</span>
+<span class="sd">    irrev_rhs_nodes : list</span>
+<span class="sd">        Metabolite identifiers of products of irreversible reactions</span>
+<span class="sd">    rev_lhs_nodes : list</span>
+<span class="sd">        Metabolite identifiers of reactants of reversible reactions</span>
+<span class="sd">    rev_rhs_nodes : list</span>
+<span class="sd">        Metabolite identifiers of products of reversible reactions</span>
+<span class="sd">    exchange_rxn_ids : list</span>
+<span class="sd">        Reaction identifers of exchange reactions</span>
+<span class="sd">    irrev_rxn_ids : list</span>
+<span class="sd">        Reaction identifiers of irreversible reactions</span>
+<span class="sd">    rev_rxn_ids : list</span>
+<span class="sd">        Reaction identifiers of reversible reactions</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">xdim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">stoi_matrix</span><span class="p">)</span>
+    <span class="n">reactants_of_reaction</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">total_metabolites_in_reaction</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">products_of_reaction</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">number_of_reactants_in_reaction</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">total_number_of_metabs_in_reaction</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">number_of_products_in_reaction</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">exchange_reaction_idx</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">reaction_identifiers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">reaction_in_model</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">metabolite_identifiers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">metab</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">:</span>
+        <span class="n">metabolite_identifiers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metab</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">rxns</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">reactions</span><span class="p">:</span>
+        <span class="n">reaction_identifiers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rxns</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">reaction_in_model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rxns</span><span class="o">.</span><span class="n">reaction</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">rxnidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">xdim</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">reactants_of_reaction</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">stoi_matrix</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">total_metabolites_in_reaction</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">stoi_matrix</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">products_of_reaction</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">stoi_matrix</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">number_of_reactants_in_reaction</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">reactants_of_reaction</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">total_number_of_metabs_in_reaction</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">total_metabolites_in_reaction</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">number_of_products_in_reaction</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">products_of_reaction</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+
+        <span class="c1"># Case 1 - Presence of bulk metabolites in the medium</span>
+
+        <span class="k">if</span> <span class="n">reaction_in_model</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span>  <span class="c1"># Assuming the bulk metabolites end in &#39;b&#39;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">number_of_reactants_in_reaction</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span>
+                    <span class="n">number_of_products_in_reaction</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">exchange_reaction_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rxnidx</span><span class="p">)</span>
+        <span class="c1"># Case 2 - Presence of exchange metabolites</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">number_of_reactants_in_reaction</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span>
+              <span class="n">total_number_of_metabs_in_reaction</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">exchange_reaction_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rxnidx</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">number_of_products_in_reaction</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span>
+              <span class="n">total_number_of_metabs_in_reaction</span><span class="p">[</span><span class="n">rxnidx</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">exchange_reaction_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rxnidx</span><span class="p">)</span>
+    <span class="n">exchange_met_ids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">exchange_met_index</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">exchange_rxn_ids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">excentry</span> <span class="ow">in</span> <span class="n">exchange_reaction_idx</span><span class="p">:</span>
+        <span class="n">exchange_rxn_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reaction_identifiers</span><span class="p">[</span><span class="n">excentry</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">reaction_in_model</span><span class="p">[</span><span class="n">excentry</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span>
+            <span class="n">exchange_met_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metabolite_identifiers</span>
+                                    <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">stoi_matrix</span><span class="p">[</span><span class="n">excentry</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exchange_met_index</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">stoi_matrix</span><span class="p">[</span><span class="n">excentry</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">exchange_met_index</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">metind</span> <span class="ow">in</span> <span class="n">exchange_met_index</span><span class="p">:</span>
+            <span class="n">exchange_met_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metabolite_identifiers</span><span class="p">[</span><span class="n">metind</span><span class="p">])</span>
+    <span class="n">all_rxn_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">reaction_in_model</span><span class="p">)))</span>
+    <span class="n">internal_rxns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">all_rxn_idx</span><span class="p">)</span> <span class="o">^</span> <span class="nb">set</span><span class="p">(</span><span class="n">exchange_reaction_idx</span><span class="p">))</span>
+    <span class="n">reversible_rxns</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">irreversible_rxns</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">rxns_lowerbound</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">rxns_upperbound</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">rxns</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">reactions</span><span class="p">:</span>
+        <span class="n">rxns_lowerbound</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rxns</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">)</span>
+        <span class="n">rxns_upperbound</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rxns</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">idxint</span> <span class="ow">in</span> <span class="n">internal_rxns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">rxns_lowerbound</span><span class="p">[</span><span class="n">idxint</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">rxns_upperbound</span><span class="p">[</span><span class="n">idxint</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">reversible_rxns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idxint</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rxns_lowerbound</span><span class="p">[</span><span class="n">idxint</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">rxns_upperbound</span><span class="p">[</span><span class="n">idxint</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">irreversible_rxns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idxint</span><span class="p">)</span>
+    <span class="c1">#  Irreversible reaction nodes</span>
+    <span class="n">irrev_lhs_temporary</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">irrev_rhs_temporary</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">irrev_lhs_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">irrev_rhs_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">irrev_rxn_ids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">irridx</span> <span class="ow">in</span> <span class="n">irreversible_rxns</span><span class="p">:</span>
+        <span class="n">irrev_rxn_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reaction_identifiers</span><span class="p">[</span><span class="n">irridx</span><span class="p">])</span>
+        <span class="n">irrev_lhs_temporary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">stoi_matrix</span><span class="p">[</span><span class="n">irridx</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="n">irrev_rhs_temporary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">stoi_matrix</span><span class="p">[</span><span class="n">irridx</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">lhsirridx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">irrev_lhs_temporary</span><span class="p">)):</span>
+        <span class="n">temp_metab_list_lhs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">met_idx_lhs</span> <span class="ow">in</span> <span class="n">irrev_lhs_temporary</span><span class="p">[</span><span class="n">lhsirridx</span><span class="p">]:</span>
+            <span class="n">met_namech_lhs</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">current_model_name</span><span class="p">,</span>
+                                        <span class="n">metabolite_identifiers</span><span class="p">[</span><span class="n">met_idx_lhs</span><span class="p">])</span>
+            <span class="n">temp_metab_list_lhs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">met_namech_lhs</span><span class="p">)</span>
+        <span class="n">irrev_lhs_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_metab_list_lhs</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">rhsirridx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">irrev_rhs_temporary</span><span class="p">)):</span>
+        <span class="n">temp_metab_list_rhs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">met_idx_rhs</span> <span class="ow">in</span> <span class="n">irrev_rhs_temporary</span><span class="p">[</span><span class="n">rhsirridx</span><span class="p">]:</span>
+            <span class="n">met_namech_rhs</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">current_model_name</span><span class="p">,</span>
+                                        <span class="n">metabolite_identifiers</span><span class="p">[</span><span class="n">met_idx_rhs</span><span class="p">])</span>
+            <span class="n">temp_metab_list_rhs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">met_namech_rhs</span><span class="p">)</span>
+        <span class="n">irrev_rhs_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_metab_list_rhs</span><span class="p">)</span>
+
+    <span class="c1">#  Reversible reaction nodes</span>
+    <span class="n">rev_lhs_temporary</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">rev_rhs_temporary</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">rev_lhs_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">rev_rhs_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">rev_rxn_ids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">rridx</span> <span class="ow">in</span> <span class="n">reversible_rxns</span><span class="p">:</span>
+        <span class="n">rev_rxn_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reaction_identifiers</span><span class="p">[</span><span class="n">rridx</span><span class="p">])</span>
+        <span class="n">rev_lhs_temporary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">stoi_matrix</span><span class="p">[</span><span class="n">rridx</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="n">rev_rhs_temporary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">stoi_matrix</span><span class="p">[</span><span class="n">rridx</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">lhsrevidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rev_lhs_temporary</span><span class="p">)):</span>
+        <span class="n">temp_metab_list_lhs_rev</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">met_idx_lhs</span> <span class="ow">in</span> <span class="n">rev_lhs_temporary</span><span class="p">[</span><span class="n">lhsrevidx</span><span class="p">]:</span>
+            <span class="n">met_namech_lhs</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">current_model_name</span><span class="p">,</span>
+                                        <span class="n">metabolite_identifiers</span><span class="p">[</span><span class="n">met_idx_lhs</span><span class="p">])</span>
+            <span class="n">temp_metab_list_lhs_rev</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">met_namech_lhs</span><span class="p">)</span>
+        <span class="n">rev_lhs_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_metab_list_lhs_rev</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">rhsrevidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rev_rhs_temporary</span><span class="p">)):</span>
+        <span class="n">temp_metab_list_rhs_rev</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">met_idx_rhs</span> <span class="ow">in</span> <span class="n">rev_rhs_temporary</span><span class="p">[</span><span class="n">rhsrevidx</span><span class="p">]:</span>
+            <span class="n">met_namech_rhs</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">current_model_name</span><span class="p">,</span>
+                                        <span class="n">metabolite_identifiers</span><span class="p">[</span><span class="n">met_idx_rhs</span><span class="p">])</span>
+            <span class="n">temp_metab_list_rhs_rev</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">met_namech_rhs</span><span class="p">)</span>
+        <span class="n">rev_rhs_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_metab_list_rhs_rev</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">exchange_met_ids</span><span class="p">,</span> <span class="n">irrev_lhs_nodes</span><span class="p">,</span> \
+        <span class="n">irrev_rhs_nodes</span><span class="p">,</span> <span class="n">rev_lhs_nodes</span><span class="p">,</span> <span class="n">rev_rhs_nodes</span><span class="p">,</span> <span class="n">exchange_rxn_ids</span><span class="p">,</span> \
+        <span class="n">irrev_rxn_ids</span><span class="p">,</span> <span class="n">rev_rxn_ids</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Aarthi Ravikrishnan.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.26',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

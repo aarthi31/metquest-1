@@ -1,0 +1,329 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>metquest.fetch_reactions &mdash; metquest 0.1.26 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> metquest
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installing.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">MetQuest modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">metquest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>metquest.fetch_reactions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for metquest.fetch_reactions</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">cobra</span>
+<span class="kn">from</span> <span class="nn">metquest.get_reaction_types</span> <span class="k">import</span> <span class="n">find_different_reaction_types</span>
+
+
+<div class="viewcode-block" id="segregate_reactions_from_models"><a class="viewcode-back" href="../../modules.html#metquest.fetch_reactions.segregate_reactions_from_models">[docs]</a><span class="k">def</span> <span class="nf">segregate_reactions_from_models</span><span class="p">(</span><span class="n">path_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function gets the data pertaining to the reactions and the</span>
+<span class="sd">    metabolites from the models of multiple organisms.</span>
+<span class="sd">    This requires as input the pathname where the &#39;.xml&#39; files are located.</span>
+<span class="sd">    From this path, this function reads all the files using the functions</span>
+<span class="sd">    in the COBRA toolbox and generates the stoichiometric model for these</span>
+<span class="sd">    SBML models.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path_name : str</span>
+<span class="sd">        full path name where the model files are</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    all_organisms_info : dict</span>
+<span class="sd">        Dictionary of all model data (reaction information about all the</span>
+<span class="sd">        organisms)</span>
+<span class="sd">    namemap : dict</span>
+<span class="sd">        Dictionary mapping the adhoc reaction names to reaction names in</span>
+<span class="sd">        the model</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">all_organisms_info</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">namemap</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">path_name</span><span class="p">)</span>
+    <span class="n">file_names</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.xml&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">file_names</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There are no .xml files. Please check the path&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Filenames&quot;</span><span class="p">,</span> <span class="n">file_names</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">model_names</span> <span class="ow">in</span> <span class="n">file_names</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">cobra</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_sbml_model</span><span class="p">(</span><span class="n">model_names</span><span class="p">)</span>
+        <span class="n">stoi</span> <span class="o">=</span> <span class="n">cobra</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">create_stoichiometric_matrix</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+            <span class="n">current_model_name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model ID not found; using file name instead&quot;</span><span class="p">)</span>
+            <span class="n">current_model_name</span> <span class="o">=</span> <span class="n">model_names</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">current_organisms_info</span> <span class="o">=</span> <span class="p">{</span><span class="n">current_model_name</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;exchange_metab_nodes&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                                       <span class="s1">&#39;irreversible_lhs_nodes&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                                       <span class="s1">&#39;irreversible_rhs_nodes&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                                       <span class="s1">&#39;reversible_rhs_nodes&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                                       <span class="s1">&#39;reversible_lhs_nodes&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                                       <span class="s1">&#39;irreversible_rxn_no&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                                       <span class="s1">&#39;reversible_rxn_no&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                                       <span class="s1">&#39;total_nodes&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                                       <span class="s1">&#39;model_rxns&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                                       <span class="s1">&#39;metabolites&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                                       <span class="s1">&#39;exch_rxn_name&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                                       <span class="s1">&#39;irrev_rxn_name&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                                       <span class="s1">&#39;rev_rxn_name&#39;</span><span class="p">:</span> <span class="p">[]}}</span>
+        <span class="n">rxns_in_model</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">mets_in_model</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">metab</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">metabolites</span><span class="p">:</span>
+            <span class="n">mets_in_model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metab</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">reac</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">reactions</span><span class="p">:</span>
+            <span class="n">rxns_in_model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reac</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">stoi_matrix</span> <span class="o">=</span> <span class="n">stoi</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">exchange_nodes</span><span class="p">,</span> <span class="n">irrev_lhs_nodes</span><span class="p">,</span> <span class="n">irrev_rhs_nodes</span><span class="p">,</span> <span class="n">rev_lhs_nodes</span><span class="p">,</span> <span class="n">rev_rhs_nodes</span><span class="p">,</span> \
+            <span class="n">exc_name</span><span class="p">,</span> <span class="n">irrev_rxn_name</span><span class="p">,</span> <span class="n">rev_rxn_name</span> <span class="o">=</span> <span class="n">find_different_reaction_types</span><span class="p">(</span>
+                <span class="n">stoi_matrix</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">current_model_name</span><span class="p">)</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span>
+            <span class="s1">&#39;exchange_metab_nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exchange_nodes</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span>
+            <span class="s1">&#39;irreversible_lhs_nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">irrev_lhs_nodes</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span>
+            <span class="s1">&#39;irreversible_rhs_nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">irrev_rhs_nodes</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span>
+            <span class="s1">&#39;reversible_lhs_nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rev_lhs_nodes</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span>
+            <span class="s1">&#39;reversible_rhs_nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rev_rhs_nodes</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span><span class="s1">&#39;exch_rxn_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exc_name</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span>
+            <span class="s1">&#39;irrev_rxn_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">irrev_rxn_name</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span>
+            <span class="s1">&#39;rev_rxn_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rev_rxn_name</span>
+
+        <span class="n">irrev_rxn_number</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">irrev_lhs_nodes</span><span class="p">)):</span>
+            <span class="n">modified_name_irrev</span> <span class="o">=</span> <span class="s1">&#39;Org_</span><span class="si">%s</span><span class="s1"> IR&#39;</span> <span class="o">%</span> <span class="n">current_model_name</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">irrev_rxn_number</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">modified_name_irrev</span><span class="p">)</span>
+            <span class="n">namemap</span><span class="p">[</span><span class="n">modified_name_irrev</span><span class="p">]</span> <span class="o">=</span> <span class="n">irrev_rxn_name</span><span class="p">[</span><span class="n">num</span><span class="p">]</span>
+
+        <span class="n">rev_rxn_number</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rev_lhs_nodes</span><span class="p">)):</span>
+            <span class="n">modified_name_rev</span> <span class="o">=</span> <span class="s1">&#39;Org_</span><span class="si">%s</span><span class="s1"> RR&#39;</span> <span class="o">%</span> <span class="n">current_model_name</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">rev_rxn_number</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">modified_name_rev</span><span class="p">)</span>
+            <span class="n">namemap</span><span class="p">[</span><span class="n">modified_name_rev</span><span class="p">]</span> <span class="o">=</span> <span class="n">rev_rxn_name</span><span class="p">[</span><span class="n">num</span><span class="p">]</span>
+
+        <span class="n">rev_back_rxn_number</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rev_lhs_nodes</span><span class="p">)):</span>
+            <span class="n">modified_name_back_rev</span> <span class="o">=</span> <span class="s1">&#39;Org_</span><span class="si">%s</span><span class="s1"> RevBR&#39;</span> <span class="o">%</span> <span class="n">current_model_name</span> <span class="o">+</span> \
+                <span class="nb">str</span><span class="p">(</span><span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">rev_back_rxn_number</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">modified_name_back_rev</span><span class="p">)</span>
+            <span class="n">namemap</span><span class="p">[</span><span class="n">modified_name_back_rev</span><span class="p">]</span> <span class="o">=</span> <span class="n">rev_rxn_name</span><span class="p">[</span><span class="n">num</span><span class="p">]</span>
+
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span>
+            <span class="s1">&#39;reversible_rxn_no&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rev_rxn_number</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span>
+            <span class="s1">&#39;irreversible_rxn_no&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">irrev_rxn_number</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span><span class="s1">&#39;total_nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="n">exchange_nodes</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">irrev_lhs_nodes</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">rev_lhs_nodes</span><span class="p">)</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span><span class="s1">&#39;model_rxns&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rxns_in_model</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span>
+            <span class="s1">&#39;reversible_back_rxn_no&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rev_back_rxn_number</span>
+        <span class="n">current_organisms_info</span><span class="p">[</span><span class="n">current_model_name</span><span class="p">][</span><span class="s1">&#39;metabolites&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mets_in_model</span>
+        <span class="n">all_organisms_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">current_organisms_info</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">all_organisms_info</span><span class="p">,</span> <span class="n">namemap</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Aarthi Ravikrishnan.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.26',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

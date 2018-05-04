@@ -1,0 +1,570 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>metquest.pathway_assembler &mdash; metquest 0.1.26 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> metquest
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installing.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">MetQuest modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">metquest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>metquest.pathway_assembler</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for metquest.pathway_assembler</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">clock</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">prod</span>
+<span class="kn">from</span> <span class="nn">networkx</span> <span class="k">import</span> <span class="n">get_node_attributes</span>
+<span class="kn">from</span> <span class="nn">metquest.guided_bfs</span> <span class="k">import</span> <span class="n">forward_pass</span>
+<span class="kn">from</span> <span class="nn">metquest.generate_partitions</span> <span class="k">import</span> <span class="n">generate_partitions</span>
+
+
+<div class="viewcode-block" id="find_pathways"><a class="viewcode-back" href="../../modules.html#metquest.pathway_assembler.find_pathways">[docs]</a><span class="k">def</span> <span class="nf">find_pathways</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed_mets_input</span><span class="p">,</span> <span class="n">path_len_cutoff</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function tries to identify pathways between a set of seed and</span>
+<span class="sd">    target metabolites of a given size cut-off.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    G : NetworkX Graph Object</span>
+<span class="sd">        Bipartite graph of the metabolic network</span>
+<span class="sd">    seed_mets_input : set</span>
+<span class="sd">        Set of seed metabolites including the source</span>
+<span class="sd">    path_len_cutoff : int</span>
+<span class="sd">        Maximum size of the pathways  </span>
+<span class="sd">    *args : int</span>
+<span class="sd">        Used to decide if a particular combination has to be evaluated or not.</span>
+<span class="sd">        i.e., if the number of pathways produced for two different metabolites</span>
+<span class="sd">        are higher, for instance, if in the reaction A + B -&gt; C,</span>
+<span class="sd">        A has 2000 pathways and B has 5 pathways, then C will have 10000 pathways</span>
+<span class="sd">        at the maximum. If this pathway cutoff (maxnumpath) is 1000,</span>
+<span class="sd">        this combination will not be evaluated, provided C has been</span>
+<span class="sd">        already found.</span>
+<span class="sd">        By default, it is set to 1000</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pathway_table : dict</span>
+<span class="sd">        Dictionary of dictionary containing the pathways of different sizes</span>
+<span class="sd">        identified for every metabolite. This will have only the acyclic/</span>
+<span class="sd">        branched pathways.</span>
+<span class="sd">    cyclic_pathways : dict</span>
+<span class="sd">        Dictionary of dictionary containing cyclic pathways of different sizes</span>
+<span class="sd">        identified for every metabolite.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">succ</span><span class="p">,</span> <span class="n">pred</span><span class="p">,</span> <span class="n">lower_bound_metabolite</span><span class="p">,</span> <span class="n">maxnumpath</span><span class="p">,</span> <span class="n">seedmets</span><span class="p">,</span> \
+        <span class="n">pathway_table</span><span class="p">,</span> <span class="n">cyclic_pathways</span>
+    <span class="n">pathway_table</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">cyclic_pathways</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">tic</span> <span class="o">=</span> <span class="n">clock</span><span class="p">()</span>
+    <span class="c1">#  Setting the cutoff for maximum number of pathways</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">maxnumpath_input</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">maxnumpath</span> <span class="o">=</span> <span class="n">maxnumpath_input</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">maxnumpath</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="c1"># DiGraph definitions successors and predecessors</span>
+    <span class="n">succ</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">successors</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">predecessors</span>
+    <span class="n">seedmets</span> <span class="o">=</span> <span class="n">seed_mets_input</span>
+    <span class="c1"># Removing reactions whose reactants are more than 5</span>
+    <span class="n">node_attributes</span> <span class="o">=</span> <span class="n">get_node_attributes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s1">&#39;bipartite&#39;</span><span class="p">)</span>
+    <span class="n">node_attributes_inverted_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># 0 metabolites , 1 are reactions</span>
+    <span class="k">for</span> <span class="n">keys</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">node_attributes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">node_attributes_inverted_dict</span><span class="p">[</span><span class="n">values</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="n">node_attributes_inverted_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">node_attributes_inverted_dict</span><span class="p">[</span><span class="n">values</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+    <span class="c1"># If the number of metabolites, apart from the ones provided</span>
+    <span class="c1"># in seed are greater than 5, such reactions are removed</span>
+    <span class="k">for</span> <span class="n">rxnstoremove</span> <span class="ow">in</span> <span class="n">node_attributes_inverted_dict</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">rxnstoremove</span><span class="p">))</span> <span class="o">-</span> <span class="n">seedmets</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">rxnstoremove</span><span class="p">)</span>
+    <span class="c1"># Performing guided BFS on directed graph by calling forward_pass</span>
+    <span class="n">lower_bound_metabolite</span><span class="p">,</span> <span class="n">status_dict</span><span class="p">,</span> <span class="n">scope</span> <span class="o">=</span> <span class="n">forward_pass</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seedmets</span><span class="p">)</span>
+    <span class="c1"># Sorting the keys (reactions) in the status dictionary,</span>
+    <span class="c1"># since dictionary keys are not good to iterate over.</span>
+    <span class="c1"># There could be differences in the order of insertion of</span>
+    <span class="c1"># dictionary keys. Although, this does not matter with the</span>
+    <span class="c1"># algorithm implementation.</span>
+    <span class="n">rxns_to_visit</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">status_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">rxns_to_visit</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="c1"># For seed metabolites, the pathway table is initialised to 0</span>
+    <span class="k">for</span> <span class="n">seedmetabs</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">seedmets</span><span class="p">):</span>
+        <span class="n">pathway_table</span><span class="p">[</span><span class="n">seedmetabs</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+    <span class="c1"># Status dict consists of all the reactions that can be</span>
+    <span class="c1"># visited from the seed metabolites</span>
+    <span class="k">for</span> <span class="n">rxns</span> <span class="ow">in</span> <span class="n">rxns_to_visit</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">rxns</span><span class="p">))</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">seedmets</span><span class="p">):</span>
+            <span class="c1"># Initialisation of dictionary with the</span>
+            <span class="c1"># metabolites produced with one rxn</span>
+            <span class="k">for</span> <span class="n">metssucc</span> <span class="ow">in</span> <span class="n">succ</span><span class="p">(</span><span class="n">rxns</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">metssucc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">:</span>
+                    <span class="n">pathway_table</span><span class="p">[</span><span class="n">metssucc</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="p">[]}</span>
+            <span class="c1"># Filling table with one reaction that produced metabolite</span>
+            <span class="k">for</span> <span class="n">metssucc</span> <span class="ow">in</span> <span class="n">succ</span><span class="p">(</span><span class="n">rxns</span><span class="p">):</span>
+                <span class="c1"># Since we don&#39;t want pathways generating seed metabolites</span>
+                <span class="k">if</span> <span class="n">metssucc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seedmets</span><span class="p">:</span>
+                    <span class="n">pathway_table</span><span class="p">[</span><span class="n">metssucc</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">rxns</span><span class="p">]))</span>
+
+<span class="c1"># For filling values from the second column</span>
+    <span class="k">for</span> <span class="n">currentcolumnidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">path_len_cutoff</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">rxns</span> <span class="ow">in</span> <span class="n">status_dict</span><span class="p">:</span>  <span class="c1"># rxns_to_visit:</span>
+            <span class="c1"># To eliminate seed metabolites, whose column value</span>
+            <span class="c1"># is always 0 - so that more partitions are not generated.</span>
+            <span class="n">mets_needed</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">rxns</span><span class="p">))</span> <span class="o">-</span> <span class="n">seedmets</span><span class="p">)</span>
+            <span class="c1"># To only go over reactions whose inputs are not</span>
+            <span class="c1"># seed metabolites. There could be reactions whose inputs</span>
+            <span class="c1"># are only seed mets, eg atp + h2o</span>
+            <span class="k">if</span> <span class="n">mets_needed</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">currentcolumnidx</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                 <span class="nb">len</span><span class="p">(</span><span class="n">mets_needed</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">currentcolumnidx</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">val</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mets_needed</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">currentcolumnidx</span><span class="o">-</span><span class="mi">2</span><span class="p">):</span>
+                        <span class="n">_first_round_calculations</span><span class="p">(</span>
+                            <span class="n">mets_needed</span><span class="p">,</span> <span class="n">currentcolumnidx</span><span class="p">,</span> <span class="n">rxns</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">_second_round_calculations</span><span class="p">(</span>
+                            <span class="n">mets_needed</span><span class="p">,</span> <span class="n">currentcolumnidx</span><span class="p">,</span> <span class="n">rxns</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+    <span class="n">toc</span> <span class="o">=</span> <span class="n">clock</span><span class="p">()</span>
+    <span class="n">timetaken</span> <span class="o">=</span> <span class="n">toc</span> <span class="o">-</span> <span class="n">tic</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Time taken&#39;</span><span class="p">,</span> <span class="n">timetaken</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pathway_table</span><span class="p">,</span> <span class="n">cyclic_pathways</span><span class="p">,</span> <span class="n">scope</span></div>
+
+
+<span class="k">def</span> <span class="nf">_first_round_calculations</span><span class="p">(</span><span class="n">mets_needed</span><span class="p">,</span> <span class="n">currentcolumnidx</span><span class="p">,</span> <span class="n">rxns</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function takes as input metabolites required by the reaction,</span>
+<span class="sd">    current column index (pathway length) which we are trying to fill,</span>
+<span class="sd">    the current reaction which we are considering and the sum that we</span>
+<span class="sd">    need to generate. This function tries to calculate the upper limit</span>
+<span class="sd">    on the number of inputs that can take the value of (k-1) and generate</span>
+<span class="sd">    partitions which have not been previously generated. For more</span>
+<span class="sd">    details, please refer main manuscript (Algorithm 1 - Lines 14-19)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mets_needed : list</span>
+<span class="sd">        List of metabolites a reaction requires</span>
+<span class="sd">    currentcolumnidx : int</span>
+<span class="sd">        An integer denoting the current column which is evaluated</span>
+<span class="sd">    rxns : str</span>
+<span class="sd">        Current reaction which is evaluated</span>
+<span class="sd">    val : int</span>
+<span class="sd">        Maximum sum that is to be generated</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Line 15 in the algorithm - Upper limit on the number of</span>
+    <span class="c1"># inputs that can take the value of (k-1)</span>
+    <span class="n">optimized_val</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">val</span><span class="o">/</span><span class="p">((</span><span class="n">currentcolumnidx</span><span class="o">-</span><span class="mi">1</span><span class="p">))))</span>
+    <span class="k">for</span> <span class="n">currentval</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">optimized_val</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># GENERATING COMBINATIONS</span>
+        <span class="c1"># This will give combinations of  metabolites whose size is</span>
+        <span class="c1"># defined by currentval</span>
+        <span class="k">for</span> <span class="n">currentmetcomb</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">mets_needed</span><span class="p">,</span> <span class="n">currentval</span><span class="p">):</span>
+            <span class="n">temp_rxn_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">number_of_pathways_found</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">onemetnotfound</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">for</span> <span class="n">metabolites</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">currentmetcomb</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">metabolites</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">:</span>
+                    <span class="c1"># To ensure that the current iteration uses metabs</span>
+                    <span class="c1"># generated only till the previous iteration</span>
+                    <span class="k">if</span> <span class="n">currentcolumnidx</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">metabolites</span><span class="p">]:</span>
+                        <span class="n">temp_rxn_list</span><span class="o">.</span><span class="n">append</span><span class="p">([[</span><span class="n">rxns</span><span class="p">]])</span>
+                        <span class="n">number_of_pathways_found</span><span class="p">[</span><span class="n">metabolites</span><span class="p">]</span> <span class="o">=</span> \
+                            <span class="nb">len</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">[</span><span class="n">metabolites</span><span class="p">][</span><span class="n">currentcolumnidx</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Because one of the metabolites is not found,</span>
+                        <span class="c1"># hence breaks out of the second loop</span>
+                        <span class="n">onemetnotfound</span> <span class="o">=</span> <span class="s1">&#39;Y&#39;</span>
+                        <span class="k">break</span>
+            <span class="k">if</span> <span class="n">onemetnotfound</span> <span class="o">!=</span> <span class="s1">&#39;Y&#39;</span><span class="p">:</span>
+                <span class="n">other_mets_not_in_comb</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">mets_needed</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">currentmetcomb</span><span class="p">))</span>
+                <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">currentmetcomb</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">mets</span> <span class="ow">in</span> <span class="n">currentmetcomb</span><span class="p">:</span>
+                        <span class="c1"># Assigning the value of columnindex -1</span>
+                        <span class="c1"># to the metabolites in current metabolite combination</span>
+                        <span class="n">temp_rxn_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">[</span><span class="n">mets</span><span class="p">][</span><span class="n">currentcolumnidx</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+                    <span class="n">first_discovery_step</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="c1"># This will give values of the lower bound of</span>
+                    <span class="c1"># metabolites which are not involved in combination</span>
+                    <span class="k">for</span> <span class="n">varmet</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">other_mets_not_in_comb</span><span class="p">):</span>
+                        <span class="n">first_discovery_step</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">lower_bound_metabolite</span><span class="p">[</span><span class="n">varmet</span><span class="p">]))</span>
+                    <span class="n">all_partitions</span> <span class="o">=</span> <span class="n">generate_partitions</span><span class="p">(</span><span class="n">val</span><span class="o">-</span><span class="p">((</span><span class="n">currentcolumnidx</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">currentval</span><span class="p">),</span>
+                                                         <span class="n">first_discovery_step</span><span class="p">,</span> <span class="n">currentcolumnidx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">partitions</span> <span class="ow">in</span> <span class="n">all_partitions</span><span class="p">:</span>
+                        <span class="n">_find_all_rxn_combination_firstround</span><span class="p">(</span><span class="n">rxns</span><span class="p">,</span> <span class="n">partitions</span><span class="p">,</span> <span class="n">other_mets_not_in_comb</span><span class="p">,</span>
+                                                            <span class="n">temp_rxn_list</span><span class="p">,</span> <span class="n">number_of_pathways_found</span><span class="p">,</span>
+                                                            <span class="n">currentcolumnidx</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_find_all_rxn_combination_firstround</span><span class="p">(</span><span class="n">rxns</span><span class="p">,</span> <span class="n">partitions</span><span class="p">,</span> <span class="n">other_mets_not_in_comb</span><span class="p">,</span>
+                                        <span class="n">temp_rxn_list</span><span class="p">,</span> <span class="n">number_of_pathways_found</span><span class="p">,</span> <span class="n">currentcolumnidx</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function fetches the pathways from the table corresponding to</span>
+<span class="sd">    the entries in partition generated.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rxns : str</span>
+<span class="sd">        Current reaction which is evaluated</span>
+<span class="sd">    paritions : tuple</span>
+<span class="sd">        Combinations of numbers that would geenrate the required sum</span>
+<span class="sd">    other_mets_not_in_comb : list</span>
+<span class="sd">        other metabolites participating in the reaction for which a</span>
+<span class="sd">        number from the partition has not been assigned yet</span>
+<span class="sd">    temp_rxn_list : list</span>
+<span class="sd">        a list consisting of all pathways that generated the metabolite</span>
+<span class="sd">        for which the value of (k-1) is assigned</span>
+<span class="sd">    number_of_pathways_found : dict</span>
+<span class="sd">        number of pathways found for the metabolite evaluated</span>
+<span class="sd">    currentcolumnidx : int</span>
+<span class="sd">         value of the current column index (pathway length)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># To check if all the other metabolites required by that reaction</span>
+    <span class="c1"># can be generated using the partitions.</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">more_pathways_found</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">varmetidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">other_mets_not_in_comb</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">other_mets_not_in_comb</span><span class="p">[</span><span class="n">varmetidx</span><span class="p">]</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">:</span>
+            <span class="c1"># checking if the pathway table consists of values from the</span>
+            <span class="c1"># current partition for the input metabolite</span>
+            <span class="k">if</span> <span class="n">partitions</span><span class="p">[</span><span class="n">varmetidx</span><span class="p">]</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">other_mets_not_in_comb</span><span class="p">[</span><span class="n">varmetidx</span><span class="p">]]:</span>
+                <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">number_of_pathways_found</span><span class="p">[</span><span class="n">other_mets_not_in_comb</span><span class="p">[</span><span class="n">varmetidx</span><span class="p">]]</span> <span class="o">=</span> \
+                    <span class="nb">len</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">[</span><span class="n">other_mets_not_in_comb</span><span class="p">[</span><span class="n">varmetidx</span><span class="p">]][</span><span class="n">partitions</span><span class="p">[</span><span class="n">varmetidx</span><span class="p">]])</span>
+    <span class="k">if</span> <span class="n">counter</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">other_mets_not_in_comb</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">prod</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">number_of_pathways_found</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="n">maxnumpath</span><span class="p">,</span>
+                <span class="nb">set</span><span class="p">(</span><span class="n">succ</span><span class="p">(</span><span class="n">rxns</span><span class="p">))</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">))]):</span>
+            <span class="n">more_pathways_found</span> <span class="o">=</span> <span class="s1">&#39;Y&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Deep copy of the reaction list, because temp_rxn_list_current</span>
+            <span class="c1"># varies with every iteration to evaluate other partitions</span>
+            <span class="n">temp_rxn_list_current</span> <span class="o">=</span> <span class="n">temp_rxn_list</span><span class="p">[:]</span>
+            <span class="k">for</span> <span class="n">varmetidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">other_mets_not_in_comb</span><span class="p">)):</span>
+                <span class="n">temp_rxn_list_current</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">pathway_table</span><span class="p">[</span><span class="n">other_mets_not_in_comb</span><span class="p">[</span><span class="n">varmetidx</span><span class="p">]][</span><span class="n">partitions</span><span class="p">[</span><span class="n">varmetidx</span><span class="p">]])</span>
+            <span class="n">_populate_table</span><span class="p">(</span><span class="n">rxns</span><span class="p">,</span> <span class="n">temp_rxn_list_current</span><span class="p">,</span> <span class="n">currentcolumnidx</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_populate_table</span><span class="p">(</span><span class="n">rxns</span><span class="p">,</span> <span class="n">temp_rxn_list_current</span><span class="p">,</span> <span class="n">currentcolumnidx</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function fills in the entry in the main pathway table. It also</span>
+<span class="sd">    evaluates the pathways and identifies if its cyclic. If the</span>
+<span class="sd">    pathway is a cyclic pathway, it is stored separately, and is not</span>
+<span class="sd">    used in the subsequent calculations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rxns : str</span>
+<span class="sd">        Current reaction which is evaluated</span>
+<span class="sd">    paritions : tuple</span>
+<span class="sd">        Combinations of numbers that would geenrate the required sum</span>
+<span class="sd">    temp_rxn_list_current : list of lists</span>
+<span class="sd">        a list of lists consisting of all the alternate pathways</span>
+<span class="sd">        producing the metabolites required by the reaction</span>
+<span class="sd">    currentcolumnidx : int</span>
+<span class="sd">         value of the current column index (pathway length)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#  Temprxnlist consists of all combinations of pathways</span>
+    <span class="c1">#  producing all the input metabolites</span>
+    <span class="k">for</span> <span class="n">rxnunion</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">temp_rxn_list_current</span><span class="p">):</span>
+        <span class="n">reaction_combntn</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+        <span class="k">for</span> <span class="n">rxnentry</span> <span class="ow">in</span> <span class="n">rxnunion</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">individualele</span> <span class="ow">in</span> <span class="n">rxnentry</span><span class="p">:</span>
+                <span class="n">reaction_combntn</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">individualele</span><span class="p">)</span>
+        <span class="n">metabs_in_cycle</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+
+        <span class="k">for</span> <span class="n">currentrxn</span> <span class="ow">in</span> <span class="n">reaction_combntn</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">inputmetab</span> <span class="ow">in</span> <span class="n">pred</span><span class="p">(</span><span class="n">currentrxn</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">inputmetab</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seedmets</span><span class="p">:</span>
+                    <span class="n">metabs_in_cycle</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">inputmetab</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">succmets</span> <span class="ow">in</span> <span class="n">succ</span><span class="p">(</span><span class="n">rxns</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">succmets</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seedmets</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reaction_combntn</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">currentcolumnidx</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">succmets</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">succmets</span> <span class="ow">in</span> <span class="n">metabs_in_cycle</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">succmets</span> <span class="ow">in</span> <span class="n">cyclic_pathways</span><span class="p">:</span>
+                                <span class="n">cyclic_pathways</span><span class="p">[</span><span class="n">succmets</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                                    <span class="p">{</span><span class="nb">len</span><span class="p">(</span><span class="n">reaction_combntn</span><span class="p">):</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">reaction_combntn</span><span class="p">)]})</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">cyclic_pathways</span><span class="p">[</span><span class="n">succmets</span><span class="p">]</span> <span class="o">=</span> \
+                                    <span class="p">{</span><span class="nb">len</span><span class="p">(</span><span class="n">reaction_combntn</span><span class="p">):</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">reaction_combntn</span><span class="p">)]}</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reaction_combntn</span><span class="p">)</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">succmets</span><span class="p">]:</span>
+                                <span class="k">try</span><span class="p">:</span>
+                                    <span class="k">if</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">succmets</span><span class="p">][</span><span class="nb">len</span><span class="p">(</span><span class="n">reaction_combntn</span><span class="p">)]</span><span class="o">.</span> \
+                                                                <span class="n">index</span><span class="p">(</span><span class="n">reaction_combntn</span><span class="p">):</span>
+                                        <span class="k">pass</span>  <span class="c1"># Because this entry is already in the pathway_table</span>
+                                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                                    <span class="n">pathway_table</span><span class="p">[</span><span class="n">succmets</span><span class="p">][</span><span class="nb">len</span><span class="p">(</span><span class="n">reaction_combntn</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                        <span class="n">reaction_combntn</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">pathway_table</span><span class="p">[</span><span class="n">succmets</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                                    <span class="p">{</span><span class="nb">len</span><span class="p">(</span><span class="n">reaction_combntn</span><span class="p">):</span> <span class="p">[</span><span class="n">reaction_combntn</span><span class="p">]})</span>
+
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">pathway_table</span><span class="p">[</span><span class="n">succmets</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="nb">len</span><span class="p">(</span><span class="n">reaction_combntn</span><span class="p">):</span> <span class="p">[</span><span class="n">reaction_combntn</span><span class="p">]}</span>
+
+<span class="k">def</span> <span class="nf">_second_round_calculations</span><span class="p">(</span><span class="n">mets_needed</span><span class="p">,</span> <span class="n">currentcolumnidx</span><span class="p">,</span> <span class="n">rxns</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function takes into account all the metabolites required by the</span>
+<span class="sd">    reaction and based on the partition of numbers, fetches the values</span>
+<span class="sd">    from the pathway table. Since there can be multiple alternate</span>
+<span class="sd">    routes to produce the same metabolite, this function makes a list</span>
+<span class="sd">    of all possible pathways (of the given size) that produces this</span>
+<span class="sd">    metabolite of interest.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mets_needed : list</span>
+<span class="sd">        List of metabolites a reaction requires</span>
+<span class="sd">    currentcolumnidx : int</span>
+<span class="sd">        An integer denoting the current column which is evaluated</span>
+<span class="sd">    rxns : str</span>
+<span class="sd">        Current reaction which is evaluated</span>
+<span class="sd">    val : int</span>
+<span class="sd">        Maximum sum that is to be generated</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">first_discovery_step</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">predmets</span> <span class="ow">in</span> <span class="n">mets_needed</span><span class="p">:</span>
+        <span class="n">first_discovery_step</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">lower_bound_metabolite</span><span class="p">[</span><span class="n">predmets</span><span class="p">]))</span>
+    <span class="n">all_partitions</span> <span class="o">=</span> <span class="n">generate_partitions</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">first_discovery_step</span><span class="p">,</span> <span class="n">currentcolumnidx</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">partitions</span> <span class="ow">in</span> <span class="n">all_partitions</span><span class="p">:</span>
+        <span class="n">temp_rxn_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">number_of_pathways_found</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">more_pathways_found</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">counter_new</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">temp_rxn_list</span><span class="o">.</span><span class="n">append</span><span class="p">([[</span><span class="n">rxns</span><span class="p">]])</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mets_needed</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">mets_needed</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">partitions</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">mets_needed</span><span class="p">[</span><span class="n">item</span><span class="p">]]:</span>
+                    <span class="n">number_of_pathways_found</span><span class="p">[</span><span class="n">mets_needed</span><span class="p">[</span><span class="n">item</span><span class="p">]]</span> <span class="o">=</span> \
+                        <span class="nb">len</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">[</span><span class="n">mets_needed</span><span class="p">[</span><span class="n">item</span><span class="p">]][</span><span class="n">partitions</span><span class="p">[</span><span class="n">item</span><span class="p">]])</span>
+                    <span class="n">counter_new</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">counter_new</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">mets_needed</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">prod</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">number_of_pathways_found</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="n">maxnumpath</span><span class="p">,</span>
+                    <span class="nb">set</span><span class="p">(</span><span class="n">succ</span><span class="p">(</span><span class="n">rxns</span><span class="p">))</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">))]):</span>
+                <span class="n">more_pathways_found</span> <span class="o">=</span> <span class="s1">&#39;NA&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mets_needed</span><span class="p">)):</span>
+                    <span class="n">temp_rxn_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">[</span><span class="n">mets_needed</span><span class="p">[</span><span class="n">item</span><span class="p">]][</span><span class="n">partitions</span><span class="p">[</span><span class="n">item</span><span class="p">]])</span>
+                <span class="n">_populate_table</span><span class="p">(</span><span class="n">rxns</span><span class="p">,</span> <span class="n">temp_rxn_list</span><span class="p">,</span> <span class="n">currentcolumnidx</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Aarthi Ravikrishnan.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.26',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

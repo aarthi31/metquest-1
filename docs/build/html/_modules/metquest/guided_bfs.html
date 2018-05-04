@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>metquest.guided_bfs &mdash; metquest 0.1.26 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> metquest
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installing.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">MetQuest modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">metquest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>metquest.guided_bfs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for metquest.guided_bfs</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">deque</span><span class="p">,</span> <span class="n">defaultdict</span>
+
+
+<div class="viewcode-block" id="forward_pass"><a class="viewcode-back" href="../../modules.html#metquest.guided_bfs.forward_pass">[docs]</a><span class="k">def</span> <span class="nf">forward_pass</span><span class="p">(</span><span class="n">graph_object</span><span class="p">,</span> <span class="n">seedmets</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function carries out the Guided Breadth First Search on a directed</span>
+<span class="sd">    bipartite graph starting from the entries in seed metabolite set.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    graph_object : NetworkX DiGraph Object</span>
+<span class="sd">        Bipartite graph of the metabolic network</span>
+
+<span class="sd">    seedmets : set</span>
+<span class="sd">        Set of seed metabolites including the source</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lower_bound_metabolite : defaultdict</span>
+<span class="sd">        Minimum number of steps required to reach a metabolite</span>
+<span class="sd">    status_dict : defaultdict</span>
+<span class="sd">        Dictionary pertaining to the status of every reaction - whether it</span>
+<span class="sd">        has been visited or not</span>
+<span class="sd">    scope : set</span>
+<span class="sd">        Set of metabolites that can be produced from the given set of</span>
+<span class="sd">        seed metabolites</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Starting with the set of seed metabolites S, the algorithm first finds</span>
+<span class="sd">    all the reactions from the set R, whose precursor metabolites are in S.</span>
+<span class="sd">    Such reactions are marked visited and added to the visited reaction set.</span>
+<span class="sd">    Metabolites produced by these reactions are checked. The reactions where</span>
+<span class="sd">    these metabolites participate are then checked for the presence of all its</span>
+<span class="sd">    predecessors and are added to the queue. This traversal continues in a</span>
+<span class="sd">    breadth-first manner and stops when there are no further reactions to</span>
+<span class="sd">    be visited.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">graph_object</span><span class="o">.</span><span class="n">predecessors</span>
+    <span class="n">succ</span> <span class="o">=</span> <span class="n">graph_object</span><span class="o">.</span><span class="n">successors</span>
+    <span class="n">seed_metabolite_set</span> <span class="o">=</span> <span class="n">seedmets</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">lower_bound_metabolite</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">lower_bound_reaction</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="c1"># Defaultdict is used simply because to avoid initialisations</span>
+    <span class="n">status_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="c1"># Using a deque since deques have O(1) speed for appendleft() and popleft()</span>
+    <span class="c1"># while lists have O(n) performance for inserting and popping.</span>
+    <span class="n">queue</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([])</span>
+    <span class="c1"># All seed metabolites are always present, hence require 0 steps</span>
+    <span class="k">for</span> <span class="n">seedmetabs</span> <span class="ow">in</span> <span class="n">seed_metabolite_set</span><span class="p">:</span>
+        <span class="n">lower_bound_metabolite</span><span class="p">[</span><span class="n">seedmetabs</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">stage</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">scope</span> <span class="o">=</span> <span class="n">seed_metabolite_set</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">starting_rxn_node</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># First stage where starting_rxn_node list contains all the reactions</span>
+    <span class="c1"># which require only the seed metabolites as input</span>
+    <span class="k">for</span> <span class="n">starting_met_nodes</span> <span class="ow">in</span> <span class="n">seed_metabolite_set</span><span class="p">:</span>
+        <span class="c1"># Essential when analysing mutiple networks with same seed metabolite</span>
+        <span class="c1"># set, although would be redundant in case of single network</span>
+        <span class="k">if</span> <span class="n">starting_met_nodes</span> <span class="ow">in</span> <span class="n">graph_object</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">startingrxns</span> <span class="ow">in</span> <span class="n">succ</span><span class="p">(</span><span class="n">starting_met_nodes</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">startingrxns</span><span class="p">))</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">seed_metabolite_set</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">startingrxns</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">starting_rxn_node</span><span class="p">:</span>
+                        <span class="n">starting_rxn_node</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">startingrxns</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">metsprod</span> <span class="ow">in</span> <span class="n">succ</span><span class="p">(</span><span class="n">startingrxns</span><span class="p">):</span>
+                        <span class="n">scope</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">metsprod</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">stage</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lower_bound_metabolite</span><span class="p">[</span><span class="n">metsprod</span><span class="p">]:</span>
+                            <span class="n">lower_bound_metabolite</span><span class="p">[</span><span class="n">metsprod</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">stage</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lower_bound_reaction</span><span class="p">[</span><span class="n">startingrxns</span><span class="p">]:</span>
+                        <span class="n">lower_bound_reaction</span><span class="p">[</span><span class="n">startingrxns</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">rxn</span> <span class="ow">in</span> <span class="n">starting_rxn_node</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">metabs</span> <span class="ow">in</span> <span class="n">succ</span><span class="p">(</span><span class="n">rxn</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">nextrxn</span> <span class="ow">in</span> <span class="n">succ</span><span class="p">(</span><span class="n">metabs</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">nextrxn</span><span class="p">))</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">scope</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">nextrxn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">queue</span><span class="p">:</span>
+                        <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nextrxn</span><span class="p">)</span>
+        <span class="n">status_dict</span><span class="p">[</span><span class="n">rxn</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;V&#39;</span>
+    <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+        <span class="n">stage</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">parentrxn</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">queue</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">status_dict</span><span class="p">[</span><span class="n">parentrxn</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">stage</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lower_bound_reaction</span><span class="p">[</span><span class="n">parentrxn</span><span class="p">]:</span>
+                    <span class="n">lower_bound_reaction</span><span class="p">[</span><span class="n">parentrxn</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">mets</span> <span class="ow">in</span> <span class="n">succ</span><span class="p">(</span><span class="n">parentrxn</span><span class="p">):</span>
+                    <span class="n">scope</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mets</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">stage</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lower_bound_metabolite</span><span class="p">[</span><span class="n">mets</span><span class="p">]:</span>
+                        <span class="n">lower_bound_metabolite</span><span class="p">[</span><span class="n">mets</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">progeny</span> <span class="ow">in</span> <span class="n">succ</span><span class="p">(</span><span class="n">mets</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">progeny</span><span class="p">))</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">scope</span><span class="p">):</span>
+
+                            <span class="k">if</span> <span class="n">status_dict</span><span class="p">[</span><span class="n">progeny</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;V&#39;</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">progeny</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">queue</span><span class="p">:</span>
+                                    <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">progeny</span><span class="p">)</span>
+                <span class="n">status_dict</span><span class="p">[</span><span class="n">parentrxn</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;V&#39;</span>
+            <span class="k">elif</span> <span class="n">status_dict</span><span class="p">[</span><span class="n">parentrxn</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;V&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">mets</span> <span class="ow">in</span> <span class="n">succ</span><span class="p">(</span><span class="n">parentrxn</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">stage</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lower_bound_metabolite</span><span class="p">[</span><span class="n">mets</span><span class="p">]:</span>
+                        <span class="n">lower_bound_metabolite</span><span class="p">[</span><span class="n">mets</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+            <span class="n">queue</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">lower_bound_metabolite</span><span class="p">,</span> <span class="n">status_dict</span><span class="p">,</span> <span class="n">scope</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Aarthi Ravikrishnan.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.26',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,697 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MetQuest modules &mdash; metquest 0.1.26 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Installation" href="installing.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> metquest
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installing.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MetQuest modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-metquest.construct_graph">metquest.construct_graph module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-metquest.execute_metquest">metquest.execute_metquest module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-metquest.fetch_reactions">metquest.fetch_reactions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-metquest.generate_partitions">metquest.generate_partitions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-metquest.get_reaction_types">metquest.get_reaction_types module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-metquest.guided_bfs">metquest.guided_bfs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-metquest.package_data">metquest.package_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-metquest.pathway_assembler">metquest.pathway_assembler module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">metquest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>MetQuest modules</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="metquest-modules">
+<h1>MetQuest modules<a class="headerlink" href="#metquest-modules" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-metquest.construct_graph">
+<span id="metquest-construct-graph-module"></span><h2>metquest.construct_graph module<a class="headerlink" href="#module-metquest.construct_graph" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="metquest.construct_graph.create_graph">
+<code class="descclassname">metquest.construct_graph.</code><code class="descname">create_graph</code><span class="sig-paren">(</span><em>path_name_with_models</em>, <em>no_of_orgs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/construct_graph.html#create_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.construct_graph.create_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function creates bipartite graph of the organisms based on the
+path provided and the number of organsisms. For instance, if a folder
+has 3 model files, and the number of organisms is 2, 3 (3C2) different
+bipartite graphs are created. The graph objects and the dictionary
+are saved as gpickle and pickle files respectively.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>path_name_with_models</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Absolute path name of the folder containing the models.</li>
+<li><strong>no_of_orgs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of organisms to be used for creating the DiGraph.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>H</strong> (<em>NetworkX DiGraph Object</em>) – Bipartite graph consisting of internal and exchange reactions in organisms</li>
+<li><strong>full_name_map</strong> (<em>dict</em>) – Dictionary mapping the adhoc reaction names to reaction names in
+the model</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-metquest.execute_metquest">
+<span id="metquest-execute-metquest-module"></span><h2>metquest.execute_metquest module<a class="headerlink" href="#module-metquest.execute_metquest" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="metquest.execute_metquest.execute_all_codes">
+<code class="descclassname">metquest.execute_metquest.</code><code class="descname">execute_all_codes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/execute_metquest.html#execute_all_codes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.execute_metquest.execute_all_codes" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function executes all the codes including constructing graphs and
+executing metquest.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>None</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="metquest.execute_metquest.find_important_reactions">
+<code class="descclassname">metquest.execute_metquest.</code><code class="descname">find_important_reactions</code><span class="sig-paren">(</span><em>all_reactions_involved</em>, <em>currenttarmet</em>, <em>seed_metabolites</em>, <em>namemap</em>, <em>G</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/execute_metquest.html#find_important_reactions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.execute_metquest.find_important_reactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function determines the important reactions based on the pathways
+generated for the target metabolite.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>all_reactions_involved</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – list of all reactions found in all the pathways from source to target</li>
+<li><strong>currenttarmet</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Current target metabolite</li>
+<li><strong>seed_metabolites</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.6)"><em>set</em></a>) – Set of seed metabolites including the source</li>
+<li><strong>namemap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Dictionary mapping the adhoc reaction names to reaction names in
+the model</li>
+<li><strong>G</strong> (<em>NetworkX DiGraph Object</em>) – Bipartite graph of the metabolic network</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>We define important reactions as those reactions which occur in almost all
+the pathways producing the target metabolite (apart from the reactions that
+are involved in the production of target metabolite and the uptake of seed
+metabolite)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="metquest.execute_metquest.find_jaccard_between_paths">
+<code class="descclassname">metquest.execute_metquest.</code><code class="descname">find_jaccard_between_paths</code><span class="sig-paren">(</span><em>only_source_to_target</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/execute_metquest.html#find_jaccard_between_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.execute_metquest.find_jaccard_between_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function determines the jaccard values between the pathways generated
+from the source to the target.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>only_source_to_target</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – list of lists consisting of all pathways producing the target
+metabolite from the source</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>jaccard_values</strong> (<em>list</em>) – list of all jaccard values (float) for all the pathway combinations</li>
+<li><strong>path_combinations</strong> (<em>list</em>) – list of all pathway combinations corresponding to the jaccard values</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Jaccard value J = (set(A).intersection(set(B)))/(set(A).union(set(B)))
+J = 1 indicates two sets are the same
+J = 0 indicates two sets are different</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="metquest.execute_metquest.find_pathways_involving_exchange_mets">
+<code class="descclassname">metquest.execute_metquest.</code><code class="descname">find_pathways_involving_exchange_mets</code><span class="sig-paren">(</span><em>number_of_xml</em>, <em>pathway_table</em>, <em>currenttarmet</em>, <em>seed_metabolites</em>, <em>namemap</em>, <em>G</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/execute_metquest.html#find_pathways_involving_exchange_mets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.execute_metquest.find_pathways_involving_exchange_mets" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function identifies the pathways producing the target metabolites,
+which involve exchange metabolites. This function prints output only when
+a community of organisms is considered, i.e., when more than one metabolic
+network is used.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>number_of_xml</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of xml files in the folder</li>
+<li><strong>pathway_table</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Dictionary of dictionary containing the pathways of different sizes
+identified for every metabolite. This will have only the acyclic/
+branched pathways.</li>
+<li><strong>currenttarmet</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Current target metabolite</li>
+<li><strong>seed_metabolites</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.6)"><em>set</em></a>) – Set of seed metabolites including the source</li>
+<li><strong>namemap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Dictionary mapping the adhoc reaction names to reaction names in
+the model</li>
+<li><strong>G</strong> (<em>NetworkX DiGraph Object</em>) – Bipartite graph of the metabolic network</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="metquest.execute_metquest.find_pathways_starting_from_source">
+<code class="descclassname">metquest.execute_metquest.</code><code class="descname">find_pathways_starting_from_source</code><span class="sig-paren">(</span><em>source_metabolites</em>, <em>pathway_table</em>, <em>currenttarmet</em>, <em>cutoff</em>, <em>G</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/execute_metquest.html#find_pathways_starting_from_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.execute_metquest.find_pathways_starting_from_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function finds all pathways starting from the source metabolites</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>source_metabolites</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – List of source metabolites</li>
+<li><strong>pathway_table</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Dictionary of dictionary containing the pathways of different sizes
+identified for every metabolite. This will have only the acyclic/
+branched pathways.</li>
+<li><strong>currenttarmet</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Current target metabolite</li>
+<li><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Maximum pathway length cutoff</li>
+<li><strong>G</strong> (<em>NetworkX DiGraph Object</em>) – Bipartite graph of the metabolic network</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>most_different_paths</strong> (<em>dict</em>) – For the given source metabolite, a combination of two most different pathways
+based on minimum Jaccard value is returned.</li>
+<li><strong>only_source_to_target</strong> (<em>list</em>) – list of list containing all pathways starting from source metabolite</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="metquest.execute_metquest.print_summary">
+<code class="descclassname">metquest.execute_metquest.</code><code class="descname">print_summary</code><span class="sig-paren">(</span><em>scope</em>, <em>currenttarmet</em>, <em>pathway_table</em>, <em>cutoff</em>, <em>cyclic_pathways</em>, <em>namemap</em>, <em>source_metabolites</em>, <em>folder_to_create</em>, <em>seed_metabolites</em>, <em>number_of_xml</em>, <em>G</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/execute_metquest.html#print_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.execute_metquest.print_summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function prints the results summary obtained from the pathways, i.e.,
+1. Number of metabolites in scope
+2. Target metabolite
+3. Pathway size cutoff
+4. Number of all branched pathways found from seed
+5. Number of all branched pathways from seed whose size &lt;= Pathway size cutoff
+6. Minimum number of steps to produce target metabolite
+7. Number of branched pathways from source whose size &lt;= Pathway size cutoff
+8. Target metabolite can be produced using cyclic pathway
+9. Number of cyclic pathways whose size &lt;= Pathway size cutoff
+10. One of the combination of most different pathways producing target metabolite
+11. Important reactions based on the frequency of occurrences</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>scope</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.6)"><em>set</em></a>) – Set of metabolites that can be produced from the given set of
+seed metabolites</li>
+<li><strong>currenttarmet</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Current target metabolite</li>
+<li><strong>pathway_table</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Dictionary of dictionary containing the pathways of different sizes
+identified for every metabolite. This will have only the acyclic/
+branched pathways.</li>
+<li><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Maximum pathway length cutoff</li>
+<li><strong>cyclic_pathways</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Dictionary of dictionary containing cyclic pathways of different sizes
+identified for every metabolite.</li>
+<li><strong>namemap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Dictionary mapping the adhoc reaction names to reaction names in
+the model</li>
+<li><strong>source_metabolites</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – List of source metabolites</li>
+<li><strong>folder_to_create</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Name of the folder where results have to be written</li>
+<li><strong>seed_metabolites</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.6)"><em>set</em></a>) – Set of seed metabolites including the source</li>
+<li><strong>number_of_xml</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of xml files in the folder</li>
+<li><strong>G</strong> (<em>NetworkX DiGraph Object</em>) – Bipartite graph of the metabolic network</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="metquest.execute_metquest.write_output_to_file">
+<code class="descclassname">metquest.execute_metquest.</code><code class="descname">write_output_to_file</code><span class="sig-paren">(</span><em>pathway_table</em>, <em>currenttarmet</em>, <em>cutoff</em>, <em>cyclic_pathways</em>, <em>folder_to_create</em>, <em>namemap</em>, <em>source_metabolites</em>, <em>G</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/execute_metquest.html#write_output_to_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.execute_metquest.write_output_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function writes the pathways of sizes less than or equal to the
+cutoff from source to the target and seed metabolites to target.
+This function also writes cyclic pathways of sizes less than or equal to
+cutoff from the source to target.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pathway_table</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Dictionary of dictionary containing the pathways of different sizes
+identified for every metabolite. This will have only the acyclic/
+branched pathways.</li>
+<li><strong>currenttarmet</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Current target metabolite</li>
+<li><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Maximum pathway length cutoff</li>
+<li><strong>cyclic_pathways</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Dictionary of dictionary containing cyclic pathways of different sizes
+identified for every metabolite.</li>
+<li><strong>folder_to_create</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Name of the folder where results have to be written</li>
+<li><strong>namemap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Dictionary mapping the adhoc reaction names to reaction names in
+the model</li>
+<li><strong>source_metabolites</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – List of source metabolites</li>
+<li><strong>G</strong> (<em>NetworkX DiGraph Object</em>) – Bipartite graph of the metabolic network</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-metquest.fetch_reactions">
+<span id="metquest-fetch-reactions-module"></span><h2>metquest.fetch_reactions module<a class="headerlink" href="#module-metquest.fetch_reactions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="metquest.fetch_reactions.segregate_reactions_from_models">
+<code class="descclassname">metquest.fetch_reactions.</code><code class="descname">segregate_reactions_from_models</code><span class="sig-paren">(</span><em>path_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/fetch_reactions.html#segregate_reactions_from_models"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.fetch_reactions.segregate_reactions_from_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function gets the data pertaining to the reactions and the
+metabolites from the models of multiple organisms.
+This requires as input the pathname where the ‘.xml’ files are located.
+From this path, this function reads all the files using the functions
+in the COBRA toolbox and generates the stoichiometric model for these
+SBML models.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – full path name where the model files are</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>all_organisms_info</strong> (<em>dict</em>) – Dictionary of all model data (reaction information about all the
+organisms)</li>
+<li><strong>namemap</strong> (<em>dict</em>) – Dictionary mapping the adhoc reaction names to reaction names in
+the model</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-metquest.generate_partitions">
+<span id="metquest-generate-partitions-module"></span><h2>metquest.generate_partitions module<a class="headerlink" href="#module-metquest.generate_partitions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="metquest.generate_partitions.generate_partitions">
+<code class="descclassname">metquest.generate_partitions.</code><code class="descname">generate_partitions</code><span class="sig-paren">(</span><em>maximumvalue</em>, <em>lbnumlist</em>, <em>columnvalue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/generate_partitions.html#generate_partitions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.generate_partitions.generate_partitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>This code takes as input the columnvalue (j), values of the shortest path
+of each of the metabolites (given as a list) and the sum that has to be
+obtained using these combination of numbers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>maximumvalue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Maximum values which the numbers can take</li>
+<li><strong>lbnumlist</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – a list of values pertaining to the length of shortest paths of
+every metabolite</li>
+<li><strong>columnvalue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Desired sum to be obtained
+All the partitions of numbers which will generate the desired sum
+whose values are between the values for shortest paths and the
+maximum values.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>all_partitions</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">List of tuples</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>For instance, if the column value is 7, the number of imputs is 2,
+and the shortest path of the metabolites is 4,3 respectively, and the
+maximum sum that has to be obtained is 8, then</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">generate_partitions</span><span class="p">(</span><span class="mi">7</span><span class="p">,[</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span><span class="mi">8</span><span class="p">)</span>
+<span class="go">[(4, 4), (5, 3)]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">generate_partitions</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="mi">5</span><span class="p">)</span>
+<span class="go">[(2, 1, 2), (2, 2, 1), (3, 1, 1)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-metquest.get_reaction_types">
+<span id="metquest-get-reaction-types-module"></span><h2>metquest.get_reaction_types module<a class="headerlink" href="#module-metquest.get_reaction_types" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="metquest.get_reaction_types.find_different_reaction_types">
+<code class="descclassname">metquest.get_reaction_types.</code><code class="descname">find_different_reaction_types</code><span class="sig-paren">(</span><em>stoi_matrix</em>, <em>model</em>, <em>current_model_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/get_reaction_types.html#find_different_reaction_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.get_reaction_types.find_different_reaction_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function finds the exchange, irreversible and the reversible reactions
+from the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>stoi_matrix</strong> (<em>numpy array</em>) – full path name where the model files are</li>
+<li><strong>model</strong> (<em>COBRA model object</em>) – COBRA model object created from SBML models</li>
+<li><strong>current_model_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Name which is to be prefixed against every
+reaction/metabolite (to differentiate the entries in multiple organisms,
+when a community model is built)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>exchange_met_ids</strong> (<em>list</em>) – Metabolite identifiers of exchange metabolites</li>
+<li><strong>irrev_lhs_nodes</strong> (<em>list</em>) – Metabolite identifiers of reactants of irreversible reactions</li>
+<li><strong>irrev_rhs_nodes</strong> (<em>list</em>) – Metabolite identifiers of products of irreversible reactions</li>
+<li><strong>rev_lhs_nodes</strong> (<em>list</em>) – Metabolite identifiers of reactants of reversible reactions</li>
+<li><strong>rev_rhs_nodes</strong> (<em>list</em>) – Metabolite identifiers of products of reversible reactions</li>
+<li><strong>exchange_rxn_ids</strong> (<em>list</em>) – Reaction identifers of exchange reactions</li>
+<li><strong>irrev_rxn_ids</strong> (<em>list</em>) – Reaction identifiers of irreversible reactions</li>
+<li><strong>rev_rxn_ids</strong> (<em>list</em>) – Reaction identifiers of reversible reactions</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-metquest.guided_bfs">
+<span id="metquest-guided-bfs-module"></span><h2>metquest.guided_bfs module<a class="headerlink" href="#module-metquest.guided_bfs" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="metquest.guided_bfs.forward_pass">
+<code class="descclassname">metquest.guided_bfs.</code><code class="descname">forward_pass</code><span class="sig-paren">(</span><em>graph_object</em>, <em>seedmets</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/guided_bfs.html#forward_pass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.guided_bfs.forward_pass" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function carries out the Guided Breadth First Search on a directed
+bipartite graph starting from the entries in seed metabolite set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>graph_object</strong> (<em>NetworkX DiGraph Object</em>) – Bipartite graph of the metabolic network</li>
+<li><strong>seedmets</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.6)"><em>set</em></a>) – Set of seed metabolites including the source</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>lower_bound_metabolite</strong> (<em>defaultdict</em>) – Minimum number of steps required to reach a metabolite</li>
+<li><strong>status_dict</strong> (<em>defaultdict</em>) – Dictionary pertaining to the status of every reaction - whether it
+has been visited or not</li>
+<li><strong>scope</strong> (<em>set</em>) – Set of metabolites that can be produced from the given set of
+seed metabolites</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Starting with the set of seed metabolites S, the algorithm first finds
+all the reactions from the set R, whose precursor metabolites are in S.
+Such reactions are marked visited and added to the visited reaction set.
+Metabolites produced by these reactions are checked. The reactions where
+these metabolites participate are then checked for the presence of all its
+predecessors and are added to the queue. This traversal continues in a
+breadth-first manner and stops when there are no further reactions to
+be visited.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-metquest.package_data">
+<span id="metquest-package-data-module"></span><h2>metquest.package_data module<a class="headerlink" href="#module-metquest.package_data" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-metquest.pathway_assembler">
+<span id="metquest-pathway-assembler-module"></span><h2>metquest.pathway_assembler module<a class="headerlink" href="#module-metquest.pathway_assembler" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="metquest.pathway_assembler.find_pathways">
+<code class="descclassname">metquest.pathway_assembler.</code><code class="descname">find_pathways</code><span class="sig-paren">(</span><em>G</em>, <em>seed_mets_input</em>, <em>path_len_cutoff</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metquest/pathway_assembler.html#find_pathways"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metquest.pathway_assembler.find_pathways" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function tries to identify pathways between a set of seed and
+target metabolites of a given size cut-off.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>G</strong> (<em>NetworkX Graph Object</em>) – Bipartite graph of the metabolic network</li>
+<li><strong>seed_mets_input</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.6)"><em>set</em></a>) – Set of seed metabolites including the source</li>
+<li><strong>path_len_cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Maximum size of the pathways</li>
+<li><strong>*args</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Used to decide if a particular combination has to be evaluated or not.
+i.e., if the number of pathways produced for two different metabolites
+are higher, for instance, if in the reaction A + B -&gt; C,
+A has 2000 pathways and B has 5 pathways, then C will have 10000 pathways
+at the maximum. If this pathway cutoff (maxnumpath) is 1000,
+this combination will not be evaluated, provided C has been
+already found.
+By default, it is set to 1000</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>pathway_table</strong> (<em>dict</em>) – Dictionary of dictionary containing the pathways of different sizes
+identified for every metabolite. This will have only the acyclic/
+branched pathways.</li>
+<li><strong>cyclic_pathways</strong> (<em>dict</em>) – Dictionary of dictionary containing cyclic pathways of different sizes
+identified for every metabolite.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="installing.html" class="btn btn-neutral" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Aarthi Ravikrishnan.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.26',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

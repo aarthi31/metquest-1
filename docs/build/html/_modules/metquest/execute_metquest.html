@@ -1,0 +1,766 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>metquest.execute_metquest &mdash; metquest 0.1.26 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> metquest
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installing.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">MetQuest modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">metquest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>metquest.execute_metquest</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for metquest.execute_metquest</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">combinations</span>
+<span class="kn">from</span> <span class="nn">metquest.pathway_assembler</span> <span class="k">import</span> <span class="n">find_pathways</span>
+<span class="kn">from</span> <span class="nn">metquest.construct_graph</span> <span class="k">import</span> <span class="n">create_graph</span>
+
+
+<div class="viewcode-block" id="write_output_to_file"><a class="viewcode-back" href="../../modules.html#metquest.execute_metquest.write_output_to_file">[docs]</a><span class="k">def</span> <span class="nf">write_output_to_file</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">,</span> <span class="n">currenttarmet</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">cyclic_pathways</span><span class="p">,</span>
+                         <span class="n">folder_to_create</span><span class="p">,</span> <span class="n">namemap</span><span class="p">,</span> <span class="n">source_metabolites</span><span class="p">,</span> <span class="n">G</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function writes the pathways of sizes less than or equal to the</span>
+<span class="sd">    cutoff from source to the target and seed metabolites to target.</span>
+<span class="sd">    This function also writes cyclic pathways of sizes less than or equal to</span>
+<span class="sd">    cutoff from the source to target.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pathway_table : dict</span>
+<span class="sd">        Dictionary of dictionary containing the pathways of different sizes</span>
+<span class="sd">        identified for every metabolite. This will have only the acyclic/</span>
+<span class="sd">        branched pathways.</span>
+<span class="sd">    currenttarmet : str</span>
+<span class="sd">        Current target metabolite</span>
+<span class="sd">    cutoff : int</span>
+<span class="sd">        Maximum pathway length cutoff</span>
+<span class="sd">    cyclic_pathways : dict</span>
+<span class="sd">        Dictionary of dictionary containing cyclic pathways of different sizes</span>
+<span class="sd">        identified for every metabolite.</span>
+<span class="sd">    folder_to_create : str</span>
+<span class="sd">        Name of the folder where results have to be written</span>
+<span class="sd">    namemap : dict</span>
+<span class="sd">        Dictionary mapping the adhoc reaction names to reaction names in</span>
+<span class="sd">        the model</span>
+<span class="sd">    source_metabolites : list</span>
+<span class="sd">        List of source metabolites</span>
+<span class="sd">    G : NetworkX DiGraph Object</span>
+<span class="sd">        Bipartite graph of the metabolic network</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">predecessors</span>
+    <span class="n">succ</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">successors</span>
+    <span class="n">all_pathways_count</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">path_count</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cyclic_pathway_count</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">currenttarmet</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">:</span>
+	    <span class="k">for</span> <span class="n">plen</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">]:</span>
+	        <span class="n">all_pathways_count</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+	            <span class="nb">len</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">][</span><span class="n">plen</span><span class="p">]))</span>
+	        <span class="k">if</span> <span class="n">plen</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cutoff</span><span class="p">):</span>
+	            <span class="n">path_count</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+	                <span class="nb">len</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">][</span><span class="n">plen</span><span class="p">]))</span>
+	    <span class="k">if</span> <span class="n">currenttarmet</span> <span class="ow">in</span> <span class="n">cyclic_pathways</span><span class="p">:</span>
+	        <span class="k">for</span> <span class="n">plen</span> <span class="ow">in</span> <span class="n">cyclic_pathways</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">]:</span>
+	            <span class="k">if</span> <span class="n">plen</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cutoff</span><span class="p">):</span>
+	                <span class="n">cyclic_pathway_count</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+	                    <span class="nb">len</span><span class="p">(</span><span class="n">cyclic_pathways</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">][</span><span class="n">plen</span><span class="p">]))</span>
+	        <span class="n">cycfname</span> <span class="o">=</span> <span class="n">folder_to_create</span> <span class="o">+</span> <span class="s1">&#39;cyclic_pathways_&#39;</span> <span class="o">+</span> <span class="n">currenttarmet</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span> \
+	            <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="s1">&#39;leq_plen_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cutoff</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span>
+	        <span class="n">pathnumcount</span> <span class="o">=</span> <span class="mi">0</span>
+	        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cycfname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">filetowrite</span><span class="p">:</span>
+	            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Writing cyclic pathways to a file&#39;</span><span class="p">)</span>
+	            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">cyclic_pathways</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">]:</span>
+	                <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cutoff</span><span class="p">):</span>
+	                    <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Path length &#39;</span> <span class="o">+</span>
+	                                      <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	                <span class="k">for</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">cyclic_pathways</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">][</span><span class="n">idx</span><span class="p">]:</span>
+	                    <span class="n">pathnumcount</span> <span class="o">+=</span> <span class="mi">1</span>
+	                    <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+	                        <span class="nb">str</span><span class="p">(</span><span class="n">pathnumcount</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	                    <span class="k">for</span> <span class="n">entities</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+	                        <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+	                            <span class="n">namemap</span><span class="p">[</span><span class="n">entities</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39; + &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">entities</span><span class="p">))</span> <span class="o">+</span>
+	                            <span class="s1">&#39;-&gt;&#39;</span> <span class="o">+</span> <span class="s1">&#39; + &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">succ</span><span class="p">(</span><span class="n">entities</span><span class="p">)))</span>
+	                        <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	                    <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;--------------------</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+	    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">cutoff</span><span class="p">)</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">]:</span>
+	        <span class="k">for</span> <span class="n">sourcemets</span> <span class="ow">in</span> <span class="n">source_metabolites</span><span class="p">:</span>
+	            <span class="n">seedfname</span> <span class="o">=</span> <span class="n">folder_to_create</span> <span class="o">+</span> <span class="s1">&#39;branched_pathways_from_seed_&#39;</span> <span class="o">+</span> \
+	                    <span class="n">currenttarmet</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span> \
+	                    <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="s1">&#39;leq_plen_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cutoff</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span>
+	            <span class="n">pathnumcount</span> <span class="o">=</span> <span class="mi">0</span>
+	            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">seedfname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">filetowrite</span><span class="p">:</span>
+	                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Writing branched pathways (from seed) to a file&#39;</span><span class="p">)</span>
+	                <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">]:</span>
+	                    <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cutoff</span><span class="p">):</span>
+	                        <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Path length &#39;</span> <span class="o">+</span>
+	                                          <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	                        <span class="k">for</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">][</span><span class="n">idx</span><span class="p">]:</span>
+	                            <span class="n">pathnumcount</span> <span class="o">+=</span> <span class="mi">1</span>
+	                            <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+	                                <span class="nb">str</span><span class="p">(</span><span class="n">pathnumcount</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	                            <span class="k">for</span> <span class="n">entities</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+	                                <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+	                                    <span class="n">namemap</span><span class="p">[</span><span class="n">entities</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="o">+</span>
+	                                    <span class="s1">&#39; + &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">entities</span><span class="p">))</span>
+	                                    <span class="o">+</span> <span class="s1">&#39;-&gt;&#39;</span> <span class="o">+</span> <span class="s1">&#39; + &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">succ</span><span class="p">(</span><span class="n">entities</span><span class="p">)))</span>
+	                                <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	                            <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+	                                <span class="s1">&#39;--------------------</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	                        <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;--------------------</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	            <span class="n">only_source_to_target</span> <span class="o">=</span> <span class="p">[]</span>
+
+	            <span class="k">for</span> <span class="n">sourcemets</span> <span class="ow">in</span> <span class="n">source_metabolites</span><span class="p">:</span>
+	                <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">]:</span>
+	                    <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cutoff</span><span class="p">):</span>
+	                        <span class="k">for</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">][</span><span class="n">idx</span><span class="p">]:</span>
+	                            <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">succ</span><span class="p">(</span><span class="n">sourcemets</span><span class="p">))</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+	                                <span class="n">only_source_to_target</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+	                                    <span class="nb">list</span><span class="p">(</span><span class="n">items</span><span class="p">))</span>
+	                <span class="k">if</span> <span class="n">only_source_to_target</span><span class="p">:</span>
+	                    <span class="n">sourcefname</span> <span class="o">=</span> <span class="n">folder_to_create</span> <span class="o">+</span> <span class="s1">&#39;branched_pathways_from_source_&#39;</span> <span class="o">+</span> \
+	                                <span class="n">currenttarmet</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span> \
+	                                <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="s1">&#39;leq_plen_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cutoff</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span>
+
+	                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">sourcefname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">filetowrite</span><span class="p">:</span>
+	                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Writing branched pathways (from source) to a file </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	                        <span class="k">for</span> <span class="n">currentidx</span><span class="p">,</span> <span class="n">listentries</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">only_source_to_target</span><span class="p">):</span>
+	                            <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">currentidx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	                            <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Path length &#39;</span> <span class="o">+</span>
+	                                              <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">listentries</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	                            <span class="k">for</span> <span class="n">entities</span> <span class="ow">in</span> <span class="n">listentries</span><span class="p">:</span>
+	                                <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+	                                    <span class="n">namemap</span><span class="p">[</span><span class="n">entities</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="o">+</span>
+	                                    <span class="s1">&#39; + &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">entities</span><span class="p">))</span>
+	                                    <span class="o">+</span> <span class="s1">&#39;-&gt;&#39;</span> <span class="o">+</span> <span class="s1">&#39; + &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">succ</span><span class="p">(</span><span class="n">entities</span><span class="p">)))</span>
+	                                <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	                            <span class="n">filetowrite</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;--------------------</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="find_pathways_starting_from_source"><a class="viewcode-back" href="../../modules.html#metquest.execute_metquest.find_pathways_starting_from_source">[docs]</a><span class="k">def</span> <span class="nf">find_pathways_starting_from_source</span><span class="p">(</span><span class="n">source_metabolites</span><span class="p">,</span> <span class="n">pathway_table</span><span class="p">,</span> <span class="n">currenttarmet</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">G</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function finds all pathways starting from the source metabolites</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source_metabolites : list</span>
+<span class="sd">        List of source metabolites</span>
+<span class="sd">    pathway_table : dict</span>
+<span class="sd">        Dictionary of dictionary containing the pathways of different sizes</span>
+<span class="sd">        identified for every metabolite. This will have only the acyclic/</span>
+<span class="sd">        branched pathways.</span>
+<span class="sd">    currenttarmet : str</span>
+<span class="sd">        Current target metabolite</span>
+<span class="sd">    cutoff : int</span>
+<span class="sd">        Maximum pathway length cutoff</span>
+<span class="sd">    G : NetworkX DiGraph Object</span>
+<span class="sd">        Bipartite graph of the metabolic network</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    most_different_paths : dict</span>
+<span class="sd">        For the given source metabolite, a combination of two most different pathways</span>
+<span class="sd">        based on minimum Jaccard value is returned.</span>
+<span class="sd">    only_source_to_target : list</span>
+<span class="sd">        list of list containing all pathways starting from source metabolite</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">succ</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">successors</span>
+    <span class="n">most_different_paths</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">only_source_to_target</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">sourcemets</span> <span class="ow">in</span> <span class="n">source_metabolites</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cutoff</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">][</span><span class="n">idx</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">succ</span><span class="p">(</span><span class="n">sourcemets</span><span class="p">))</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+                        <span class="n">only_source_to_target</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="nb">list</span><span class="p">(</span><span class="n">items</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">only_source_to_target</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span> 
+            <span class="c1"># Sometimes there can be only one pathway producing target</span>
+            <span class="c1"># To find most different paths from source</span>
+            <span class="n">j_value</span><span class="p">,</span> <span class="n">rxn_comb</span> <span class="o">=</span> <span class="n">find_jaccard_between_paths</span><span class="p">(</span>
+                <span class="n">only_source_to_target</span><span class="p">)</span>
+            <span class="n">min_j_index</span> <span class="o">=</span> <span class="n">j_value</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">j_value</span><span class="p">))</span>
+            <span class="n">most_different_paths</span><span class="p">[</span><span class="n">sourcemets</span><span class="p">]</span> <span class="o">=</span> <span class="n">rxn_comb</span><span class="p">[</span><span class="n">min_j_index</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">most_different_paths</span><span class="p">,</span> <span class="n">only_source_to_target</span></div>
+
+
+
+<div class="viewcode-block" id="print_summary"><a class="viewcode-back" href="../../modules.html#metquest.execute_metquest.print_summary">[docs]</a><span class="k">def</span> <span class="nf">print_summary</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">currenttarmet</span><span class="p">,</span> <span class="n">pathway_table</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">cyclic_pathways</span><span class="p">,</span> <span class="n">namemap</span><span class="p">,</span>
+                  <span class="n">source_metabolites</span><span class="p">,</span> <span class="n">folder_to_create</span><span class="p">,</span> <span class="n">seed_metabolites</span><span class="p">,</span>
+                  <span class="n">number_of_xml</span><span class="p">,</span> <span class="n">G</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function prints the results summary obtained from the pathways, i.e.,</span>
+<span class="sd">    1. Number of metabolites in scope</span>
+<span class="sd">    2. Target metabolite</span>
+<span class="sd">    3. Pathway size cutoff</span>
+<span class="sd">    4. Number of all branched pathways found from seed</span>
+<span class="sd">    5. Number of all branched pathways from seed whose size &lt;= Pathway size cutoff</span>
+<span class="sd">    6. Minimum number of steps to produce target metabolite</span>
+<span class="sd">    7. Number of branched pathways from source whose size &lt;= Pathway size cutoff</span>
+<span class="sd">    8. Target metabolite can be produced using cyclic pathway</span>
+<span class="sd">    9. Number of cyclic pathways whose size &lt;= Pathway size cutoff</span>
+<span class="sd">    10. One of the combination of most different pathways producing target metabolite</span>
+<span class="sd">    11. Important reactions based on the frequency of occurrences</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    scope : set</span>
+<span class="sd">        Set of metabolites that can be produced from the given set of</span>
+<span class="sd">        seed metabolites</span>
+<span class="sd">    currenttarmet : str</span>
+<span class="sd">        Current target metabolite</span>
+<span class="sd">    pathway_table : dict</span>
+<span class="sd">        Dictionary of dictionary containing the pathways of different sizes</span>
+<span class="sd">        identified for every metabolite. This will have only the acyclic/</span>
+<span class="sd">        branched pathways.</span>
+<span class="sd">    cutoff : int</span>
+<span class="sd">        Maximum pathway length cutoff</span>
+<span class="sd">    cyclic_pathways : dict</span>
+<span class="sd">        Dictionary of dictionary containing cyclic pathways of different sizes</span>
+<span class="sd">        identified for every metabolite.</span>
+<span class="sd">    namemap : dict</span>
+<span class="sd">        Dictionary mapping the adhoc reaction names to reaction names in</span>
+<span class="sd">        the model</span>
+<span class="sd">    source_metabolites : list</span>
+<span class="sd">        List of source metabolites</span>
+<span class="sd">    folder_to_create : str</span>
+<span class="sd">        Name of the folder where results have to be written</span>
+<span class="sd">    seed_metabolites : set</span>
+<span class="sd">        Set of seed metabolites including the source</span>
+<span class="sd">    number_of_xml : int</span>
+<span class="sd">        Number of xml files in the folder</span>
+<span class="sd">    G : NetworkX DiGraph Object</span>
+<span class="sd">        Bipartite graph of the metabolic network</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">predecessors</span>
+    <span class="n">succ</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">successors</span>
+    <span class="n">all_pathways_count</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">path_count</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cyclic_pathway_count</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Summary&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of metabolites in scope : &#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">scope</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Target metabolite : &#39;</span><span class="p">,</span> <span class="n">currenttarmet</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Pathway size cutoff : &#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cutoff</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">currenttarmet</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">plen</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">]:</span>
+            <span class="n">all_pathways_count</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">][</span><span class="n">plen</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">plen</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cutoff</span><span class="p">):</span>
+                <span class="n">path_count</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">][</span><span class="n">plen</span><span class="p">]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of all branched pathways found from seed&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">all_pathways_count</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of all branched pathways from seed whose size &lt;=&#39;</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">path_count</span><span class="p">))</span>
+        <span class="n">minsteps</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Minimum number of steps to produce &#39;</span><span class="p">,</span>
+              <span class="n">currenttarmet</span><span class="p">,</span> <span class="s1">&#39; : &#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">minsteps</span><span class="p">))</span>
+        <span class="c1"># Finding essential reactions and exchange metabolites</span>
+        <span class="n">all_reactions_involved</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">plen</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">pathways</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">][</span><span class="n">plen</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">reactions</span> <span class="ow">in</span> <span class="n">pathways</span><span class="p">:</span>
+                    <span class="n">all_reactions_involved</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reactions</span><span class="p">)</span>
+        <span class="n">find_pathways_involving_exchange_mets</span><span class="p">(</span><span class="n">number_of_xml</span><span class="p">,</span> <span class="n">pathway_table</span><span class="p">,</span> <span class="n">currenttarmet</span><span class="p">,</span>
+                                              <span class="n">seed_metabolites</span><span class="p">,</span> <span class="n">namemap</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+        <span class="n">most_different_paths</span><span class="p">,</span> <span class="n">only_source_to_target</span> <span class="o">=</span> <span class="n">find_pathways_starting_from_source</span><span class="p">(</span><span class="n">source_metabolites</span><span class="p">,</span> <span class="n">pathway_table</span><span class="p">,</span>
+                                                                                         <span class="n">currenttarmet</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+        <span class="c1"># Two most different paths</span>
+        <span class="k">if</span> <span class="n">most_different_paths</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of branched pathways from source whose size &lt;=&#39;</span><span class="p">,</span>
+                  <span class="n">cutoff</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">only_source_to_target</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">currenttarmet</span> <span class="ow">in</span> <span class="n">cyclic_pathways</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">currenttarmet</span><span class="p">,</span> <span class="s1">&#39;can be produced using cyclic pathway&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">plen</span> <span class="ow">in</span> <span class="n">cyclic_pathways</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">plen</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cutoff</span><span class="p">):</span>
+                    <span class="n">cyclic_pathway_count</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="n">cyclic_pathways</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">][</span><span class="n">plen</span><span class="p">]))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of cyclic pathways whose size &lt;=&#39;</span><span class="p">,</span>
+                  <span class="n">cutoff</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">cyclic_pathway_count</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">currenttarmet</span><span class="p">,</span> <span class="s1">&#39;cannot be produced using cyclic pathway&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">most_different_paths</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;One of the combination of most different pathways producing target metabolite&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Note - There can be other combinations that can be found&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;For finding all the combinations, please use the function find_jaccard_between_paths&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sourcemets</span> <span class="ow">in</span> <span class="n">most_different_paths</span><span class="p">:</span>
+                <span class="n">counterpaths</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">pathway</span> <span class="ow">in</span> <span class="n">most_different_paths</span><span class="p">[</span><span class="n">sourcemets</span><span class="p">]:</span>
+                    <span class="n">counterpaths</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Pathway&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">counterpaths</span><span class="p">))</span>
+                    <span class="n">pathway</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">rxns</span> <span class="ow">in</span> <span class="n">pathway</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">namemap</span><span class="p">[</span><span class="n">rxns</span><span class="p">],</span> <span class="s1">&#39; + &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">rxns</span><span class="p">))),</span> <span class="s1">&#39;--&gt;&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39; + &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">succ</span><span class="p">(</span><span class="n">rxns</span><span class="p">))))</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No/only one pathway starting from source&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Two most different paths from source : None&#39;</span><span class="p">)</span>
+        <span class="n">find_important_reactions</span><span class="p">(</span><span class="n">all_reactions_involved</span><span class="p">,</span> <span class="n">currenttarmet</span><span class="p">,</span> <span class="n">seed_metabolites</span><span class="p">,</span> <span class="n">namemap</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">currenttarmet</span><span class="p">,</span> <span class="s1">&#39;: Target could not be found.&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Consider changing the cut-off or the seed metabolite set&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="find_important_reactions"><a class="viewcode-back" href="../../modules.html#metquest.execute_metquest.find_important_reactions">[docs]</a><span class="k">def</span> <span class="nf">find_important_reactions</span><span class="p">(</span><span class="n">all_reactions_involved</span><span class="p">,</span> <span class="n">currenttarmet</span><span class="p">,</span> <span class="n">seed_metabolites</span><span class="p">,</span> <span class="n">namemap</span><span class="p">,</span> <span class="n">G</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function determines the important reactions based on the pathways</span>
+<span class="sd">    generated for the target metabolite.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    all_reactions_involved : list</span>
+<span class="sd">        list of all reactions found in all the pathways from source to target</span>
+<span class="sd">    currenttarmet : str</span>
+<span class="sd">        Current target metabolite</span>
+<span class="sd">    seed_metabolites : set</span>
+<span class="sd">        Set of seed metabolites including the source</span>
+<span class="sd">    namemap : dict</span>
+<span class="sd">        Dictionary mapping the adhoc reaction names to reaction names in</span>
+<span class="sd">        the model</span>
+<span class="sd">    G : NetworkX DiGraph Object</span>
+<span class="sd">        Bipartite graph of the metabolic network</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    We define important reactions as those reactions which occur in almost all</span>
+<span class="sd">    the pathways producing the target metabolite (apart from the reactions that</span>
+<span class="sd">    are involved in the production of target metabolite and the uptake of seed</span>
+<span class="sd">    metabolite)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">predecessors</span>
+    <span class="n">important_candidates</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">all_reactions_involved</span><span class="p">)</span>
+    <span class="n">important_reactions_inverted_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">keys</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">important_candidates</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">important_reactions_inverted_dict</span><span class="p">[</span><span class="n">values</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="n">important_reactions_inverted_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">important_reactions_inverted_dict</span><span class="p">[</span><span class="n">values</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+    <span class="n">number_of_occurrences</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">important_reactions_inverted_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">number_of_occurrences</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">top_candidate</span> <span class="o">=</span> <span class="n">number_of_occurrences</span><span class="p">[:</span><span class="o">-</span><span class="mi">6</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">important_reactions</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">numrepeats</span> <span class="ow">in</span> <span class="n">top_candidate</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">rxns</span> <span class="ow">in</span> <span class="n">important_reactions_inverted_dict</span><span class="p">[</span><span class="n">numrepeats</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">rxns</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pred</span><span class="p">(</span><span class="n">currenttarmet</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">rxns</span><span class="p">))</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">seed_metabolites</span><span class="p">):</span>
+                    <span class="n">important_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rxns</span><span class="p">)</span>
+    <span class="n">important_reactions_model_names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">rxns</span> <span class="ow">in</span> <span class="n">important_reactions</span><span class="p">:</span>
+        <span class="n">important_reactions_model_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">namemap</span><span class="p">[</span><span class="n">rxns</span><span class="p">])</span>
+    <span class="n">important_reactions_model_names</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">important_reactions</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Important reactions based on the frequency of occurrence are&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">important_reactions_model_names</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;All reactions pertain to uptake of seed metabolite/ production of target metabolite&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="find_pathways_involving_exchange_mets"><a class="viewcode-back" href="../../modules.html#metquest.execute_metquest.find_pathways_involving_exchange_mets">[docs]</a><span class="k">def</span> <span class="nf">find_pathways_involving_exchange_mets</span><span class="p">(</span><span class="n">number_of_xml</span><span class="p">,</span> <span class="n">pathway_table</span><span class="p">,</span> <span class="n">currenttarmet</span><span class="p">,</span>
+                                          <span class="n">seed_metabolites</span><span class="p">,</span> <span class="n">namemap</span><span class="p">,</span> <span class="n">G</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function identifies the pathways producing the target metabolites,</span>
+<span class="sd">    which involve exchange metabolites. This function prints output only when</span>
+<span class="sd">    a community of organisms is considered, i.e., when more than one metabolic</span>
+<span class="sd">    network is used.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    number_of_xml : int</span>
+<span class="sd">        Number of xml files in the folder</span>
+<span class="sd">    pathway_table : dict</span>
+<span class="sd">        Dictionary of dictionary containing the pathways of different sizes</span>
+<span class="sd">        identified for every metabolite. This will have only the acyclic/</span>
+<span class="sd">        branched pathways.</span>
+<span class="sd">    currenttarmet : str</span>
+<span class="sd">        Current target metabolite</span>
+<span class="sd">    seed_metabolites : set</span>
+<span class="sd">        Set of seed metabolites including the source</span>
+<span class="sd">    namemap : dict</span>
+<span class="sd">        Dictionary mapping the adhoc reaction names to reaction names in</span>
+<span class="sd">        the model</span>
+<span class="sd">    G : NetworkX DiGraph Object</span>
+<span class="sd">        Bipartite graph of the metabolic network</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">predecessors</span>
+    <span class="n">succ</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">successors</span>
+    <span class="n">exchange_reactions</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">number_of_xml</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">plen</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">pathways</span> <span class="ow">in</span> <span class="n">pathway_table</span><span class="p">[</span><span class="n">currenttarmet</span><span class="p">][</span><span class="n">plen</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">reactions</span> <span class="ow">in</span> <span class="n">pathways</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">reactions</span><span class="p">))</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">seed_metabolites</span><span class="p">):</span>
+                        <span class="c1">#  &#39;ER&#39; is an adhoc reaction name assigned to exchange</span>
+                        <span class="c1">#  reactions in the models.</span>
+                        <span class="k">if</span> <span class="s1">&#39;ER&#39;</span> <span class="ow">in</span> <span class="n">reactions</span><span class="p">:</span>
+                            <span class="n">exchange_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reactions</span><span class="p">)</span>
+        <span class="n">exchange_candidates</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">exchange_reactions</span><span class="p">)</span>
+        <span class="n">exchange_candidates_inverted_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">keys</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">exchange_candidates</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">exchange_candidates_inverted_dict</span><span class="p">[</span><span class="n">values</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">exchange_candidates_inverted_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">exchange_candidates_inverted_dict</span><span class="p">[</span><span class="n">values</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+        <span class="n">number_of_occurrences</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">exchange_candidates_inverted_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">number_of_occurrences</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="c1"># [:-6:-1] # Taking the top reaction</span>
+        <span class="n">top_candidate</span> <span class="o">=</span> <span class="n">number_of_occurrences</span><span class="p">[:</span><span class="o">-</span><span class="mi">10</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">exchange_reactions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">numrepeats</span> <span class="ow">in</span> <span class="n">top_candidate</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">rxns</span> <span class="ow">in</span> <span class="n">exchange_candidates_inverted_dict</span><span class="p">[</span><span class="n">numrepeats</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">rxns</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pred</span><span class="p">(</span><span class="n">currenttarmet</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">rxns</span><span class="p">))</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">seed_metabolites</span><span class="p">):</span>
+                        <span class="n">exchange_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rxns</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">exchange_reactions</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Exchange reactions are&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">rxns</span> <span class="ow">in</span> <span class="n">exchange_reactions</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">namemap</span><span class="p">[</span><span class="n">rxns</span><span class="p">],</span> <span class="nb">list</span><span class="p">(</span><span class="n">pred</span><span class="p">(</span><span class="n">rxns</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">succ</span><span class="p">(</span><span class="n">rxns</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No metabolite exchanged&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="find_jaccard_between_paths"><a class="viewcode-back" href="../../modules.html#metquest.execute_metquest.find_jaccard_between_paths">[docs]</a><span class="k">def</span> <span class="nf">find_jaccard_between_paths</span><span class="p">(</span><span class="n">only_source_to_target</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function determines the jaccard values between the pathways generated</span>
+<span class="sd">    from the source to the target.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    only_source_to_target : list</span>
+<span class="sd">        list of lists consisting of all pathways producing the target</span>
+<span class="sd">        metabolite from the source</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    jaccard_values : list</span>
+<span class="sd">        list of all jaccard values (float) for all the pathway combinations</span>
+<span class="sd">    path_combinations : list</span>
+<span class="sd">        list of all pathway combinations corresponding to the jaccard values</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Jaccard value J = (set(A).intersection(set(B)))/(set(A).union(set(B)))</span>
+<span class="sd">    J = 1 indicates two sets are the same</span>
+<span class="sd">    J = 0 indicates two sets are different</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">jaccard_values</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">path_combinations</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">reactionlists</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">only_source_to_target</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">j_value</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">reactionlists</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="n">reactionlists</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">reactionlists</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">reactionlists</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+        <span class="n">jaccard_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j_value</span><span class="p">)</span>
+        <span class="n">path_combinations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reactionlists</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">jaccard_values</span><span class="p">,</span> <span class="n">path_combinations</span></div>
+
+
+<div class="viewcode-block" id="execute_all_codes"><a class="viewcode-back" href="../../modules.html#metquest.execute_metquest.execute_all_codes">[docs]</a><span class="k">def</span> <span class="nf">execute_all_codes</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function executes all the codes including constructing graphs and </span>
+<span class="sd">    executing metquest.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    None</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">inputfoldername</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">inputfoldername</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Enter folder name with all files </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;~&#39;</span> <span class="ow">in</span> <span class="n">inputfoldername</span><span class="p">:</span>
+        <span class="n">inputfoldername</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">inputfoldername</span><span class="p">)</span>
+    <span class="n">list_of_files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">inputfoldername</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">foldernames</span> <span class="ow">in</span> <span class="n">list_of_files</span><span class="p">:</span>
+        <span class="c1"># To go through only folders</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">inputfoldername</span><span class="p">,</span> <span class="n">foldernames</span><span class="p">)):</span>
+            <span class="n">current_evaluation_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">inputfoldername</span><span class="p">,</span> <span class="n">foldernames</span><span class="p">)</span>
+            <span class="n">number_of_files_in_current_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span>
+                <span class="n">current_evaluation_folder</span><span class="p">)</span>
+            <span class="n">number_of_xml</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">filenames</span> <span class="k">for</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">number_of_files_in_current_folder</span> <span class="k">if</span> <span class="s1">&#39;.xml&#39;</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Currently evaluating files in&#39;</span><span class="p">,</span> <span class="n">foldernames</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of networks&#39;</span><span class="p">,</span> <span class="n">number_of_xml</span><span class="p">)</span>
+            <span class="n">G</span><span class="p">,</span> <span class="n">namemap</span> <span class="o">=</span> <span class="n">create_graph</span><span class="p">(</span>
+                <span class="n">current_evaluation_folder</span><span class="p">,</span> <span class="n">number_of_xml</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">files</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">files</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;seed&#39;</span><span class="p">):</span>
+                        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">seedfile</span><span class="p">:</span>
+                            <span class="n">seedmetslist</span> <span class="o">=</span> <span class="n">seedfile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+                        <span class="n">seed_metabolites</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">seedmetslist</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">files</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;source&#39;</span><span class="p">):</span>
+                        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">sourcefile</span><span class="p">:</span>
+                            <span class="n">source_metabolites</span> <span class="o">=</span> <span class="n">sourcefile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+                    <span class="k">elif</span> <span class="n">files</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">):</span>
+                        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">targetfile</span><span class="p">:</span>
+                            <span class="c1"># Target metabolites can be multiple values</span>
+                            <span class="n">targetmetabolites</span> <span class="o">=</span> <span class="n">targetfile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+                    <span class="k">elif</span> <span class="n">files</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;cutoff&#39;</span><span class="p">):</span>
+                        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">cutofffile</span><span class="p">:</span>
+                            <span class="n">cutoff_list</span> <span class="o">=</span> <span class="n">cutofffile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>  <span class="c1"># Cutoff can be multiple values</span>
+            <span class="k">for</span> <span class="n">mets</span> <span class="ow">in</span> <span class="n">source_metabolites</span><span class="p">:</span>
+                <span class="n">seed_metabolites</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mets</span><span class="p">)</span>
+            <span class="n">metfoundingraph</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">metabs</span> <span class="ow">in</span> <span class="n">seed_metabolites</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">metabs</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">metabs</span><span class="p">,</span> <span class="s1">&#39;not in G. MetQuest will not be executed&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Please check the metabolite names&#39;</span><span class="p">)</span>
+                    <span class="n">metfoundingraph</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">break</span>
+            <span class="k">for</span> <span class="n">metabs</span> <span class="ow">in</span> <span class="n">targetmetabolites</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">metabs</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">metabs</span><span class="p">,</span> <span class="s1">&#39;not in G. MetQuest will not be executed&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Please check the metabolite names&#39;</span><span class="p">)</span>
+                    <span class="n">metfoundingraph</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="n">metfoundingraph</span><span class="p">:</span>
+                <span class="n">folder_to_create</span> <span class="o">=</span> <span class="s1">&#39;Results/&#39;</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder_to_create</span><span class="p">):</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder_to_create</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">currenttarmet</span> <span class="ow">in</span> <span class="n">targetmetabolites</span><span class="p">:</span>  <span class="c1"># multiple target mets</span>
+                    <span class="k">for</span> <span class="n">cutoff</span> <span class="ow">in</span> <span class="n">cutoff_list</span><span class="p">:</span>  <span class="c1"># multiple cutoffs</span>
+                        <span class="n">pathway_table</span><span class="p">,</span> <span class="n">cyclic_pathways</span><span class="p">,</span> <span class="n">scope</span> <span class="o">=</span> <span class="n">find_pathways</span><span class="p">(</span>
+                            <span class="n">G</span><span class="p">,</span> <span class="n">seed_metabolites</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">cutoff</span><span class="p">))</span>
+                        <span class="n">print_summary</span><span class="p">(</span><span class="n">scope</span><span class="p">,</span> <span class="n">currenttarmet</span><span class="p">,</span> <span class="n">pathway_table</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">cyclic_pathways</span><span class="p">,</span>
+                                      <span class="n">namemap</span><span class="p">,</span> <span class="n">source_metabolites</span><span class="p">,</span> <span class="n">folder_to_create</span><span class="p">,</span>
+                                      <span class="n">seed_metabolites</span><span class="p">,</span> <span class="n">number_of_xml</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+                        <span class="n">write_output_to_file</span><span class="p">(</span><span class="n">pathway_table</span><span class="p">,</span> <span class="n">currenttarmet</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span>
+                                             <span class="n">cyclic_pathways</span><span class="p">,</span> <span class="n">folder_to_create</span><span class="p">,</span>
+                                             <span class="n">namemap</span><span class="p">,</span> <span class="n">source_metabolites</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;../&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Aarthi Ravikrishnan.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.26',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,436 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>metquest.construct_graph &mdash; metquest 0.1.26 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> metquest
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installing.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">MetQuest modules</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">metquest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>metquest.construct_graph</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for metquest.construct_graph</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">pickle</span> <span class="k">import</span> <span class="n">dump</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">from</span> <span class="nn">metquest</span> <span class="k">import</span> <span class="n">fetch_reactions</span>
+
+
+<span class="k">def</span> <span class="nf">_create_graph_with_internal_reaction</span><span class="p">(</span><span class="n">organismsdata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function creates a NetworkX DiGraph object which consists of</span>
+<span class="sd">    reactions and metabolites happening inside the organisms in a community.</span>
+<span class="sd">    This makes use of the reaction information i.e., irreversible and</span>
+<span class="sd">    reversible, which is obtained from another script fetch_reactions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    organismsdata : dict</span>
+<span class="sd">        Dictionary containing the reaction information about organisms</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    G : NetworkX DiGraph Object</span>
+<span class="sd">        Bipartite graph consisting of internal reactions in organisms</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">modelname</span> <span class="ow">in</span> <span class="n">organismsdata</span><span class="p">:</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">]</span>
+                         <span class="p">[</span><span class="s1">&#39;irreversible_rxn_no&#39;</span><span class="p">],</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">]</span>
+                         <span class="p">[</span><span class="s1">&#39;reversible_rxn_no&#39;</span><span class="p">],</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">]</span>
+                         <span class="p">[</span><span class="s1">&#39;reversible_back_rxn_no&#39;</span><span class="p">],</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">irrev_lhs_nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;irreversible_lhs_nodes&#39;</span><span class="p">]</span>
+             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]))</span>
+        <span class="n">irrev_rhs_nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;irreversible_rhs_nodes&#39;</span><span class="p">]</span>
+             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]))</span>
+        <span class="n">rev_lhs_nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_lhs_nodes&#39;</span><span class="p">]</span>
+             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]))</span>
+        <span class="n">rev_rhs_nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_rhs_nodes&#39;</span><span class="p">]</span>
+             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]))</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">irrev_lhs_nodes</span><span class="p">,</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">irrev_rhs_nodes</span><span class="p">,</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">rev_lhs_nodes</span><span class="p">,</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">rev_rhs_nodes</span><span class="p">,</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">irrevidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;irreversible_rxn_no&#39;</span><span class="p">])):</span>
+            <span class="k">for</span> <span class="n">lhsmetidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;irreversible_lhs_nodes&#39;</span><span class="p">][</span><span class="n">irrevidx</span><span class="p">])):</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;irreversible_lhs_nodes&#39;</span><span class="p">][</span><span class="n">irrevidx</span><span class="p">]</span>
+                                   <span class="p">[</span><span class="n">lhsmetidx</span><span class="p">],</span>
+                                   <span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;irreversible_rxn_no&#39;</span><span class="p">][</span><span class="n">irrevidx</span><span class="p">])])</span>
+            <span class="k">for</span> <span class="n">rhsmetidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;irreversible_rhs_nodes&#39;</span><span class="p">][</span><span class="n">irrevidx</span><span class="p">])):</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;irreversible_rxn_no&#39;</span><span class="p">][</span><span class="n">irrevidx</span><span class="p">],</span>
+                                   <span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;irreversible_rhs_nodes&#39;</span><span class="p">][</span><span class="n">irrevidx</span><span class="p">][</span><span class="n">rhsmetidx</span><span class="p">])])</span>
+        <span class="k">for</span> <span class="n">revidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_rxn_no&#39;</span><span class="p">])):</span>
+            <span class="k">for</span> <span class="n">lhsmetidxrev</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_lhs_nodes&#39;</span><span class="p">][</span><span class="n">revidx</span><span class="p">])):</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_lhs_nodes&#39;</span><span class="p">][</span><span class="n">revidx</span><span class="p">]</span>
+                                   <span class="p">[</span><span class="n">lhsmetidxrev</span><span class="p">],</span>
+                                   <span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_rxn_no&#39;</span><span class="p">][</span><span class="n">revidx</span><span class="p">])])</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_back_rxn_no&#39;</span><span class="p">][</span><span class="n">revidx</span><span class="p">],</span>
+                                   <span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_lhs_nodes&#39;</span><span class="p">][</span><span class="n">revidx</span><span class="p">][</span><span class="n">lhsmetidxrev</span><span class="p">])])</span>
+            <span class="k">for</span> <span class="n">rhsmetidxrev</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_rhs_nodes&#39;</span><span class="p">][</span><span class="n">revidx</span><span class="p">])):</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_rxn_no&#39;</span><span class="p">][</span><span class="n">revidx</span><span class="p">],</span>
+                                   <span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_rhs_nodes&#39;</span><span class="p">][</span><span class="n">revidx</span><span class="p">][</span><span class="n">rhsmetidxrev</span><span class="p">])])</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_rhs_nodes&#39;</span><span class="p">][</span><span class="n">revidx</span><span class="p">]</span>
+                                   <span class="p">[</span><span class="n">rhsmetidxrev</span><span class="p">],</span>
+                                   <span class="n">organismsdata</span><span class="p">[</span><span class="n">modelname</span><span class="p">][</span><span class="s1">&#39;reversible_back_rxn_no&#39;</span><span class="p">][</span><span class="n">revidx</span><span class="p">])])</span>
+    <span class="k">return</span> <span class="n">G</span>
+
+
+<span class="k">def</span> <span class="nf">_create_graph_with_exchange_reactions</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">orgs</span><span class="p">,</span> <span class="n">namemap</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function first identifies the common exchange metabolites</span>
+<span class="sd">    and the non-common exchange metabolites and adds them to the</span>
+<span class="sd">    DiGraph object generated above.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    G : NetworkX DiGraph Object</span>
+<span class="sd">        Bipartite graph of reaction network from organisms</span>
+<span class="sd">    orgs : dict</span>
+<span class="sd">        Dictionary consisting of irreversible, reversible and exchange</span>
+<span class="sd">        reactions pertaining to the organisms. If more than one organism</span>
+<span class="sd">        is used, this dictionary consists of information about all the</span>
+<span class="sd">        organisms.</span>
+<span class="sd">    namemap : dict</span>
+<span class="sd">        Dictionary mapping the adhoc reaction names to reaction names in</span>
+<span class="sd">        the model</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    G : NetworkX DiGraph Object</span>
+<span class="sd">        Bipartite graph consisting of internal and exchange reactions in organisms</span>
+<span class="sd">    namemap : dict</span>
+<span class="sd">        Dictionary mapping the adhoc exchange reaction names to reaction names in</span>
+<span class="sd">        the model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">metabolite_exchanged</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">orgnames</span> <span class="ow">in</span> <span class="n">orgs</span><span class="p">:</span>
+        <span class="n">exc_met</span> <span class="o">=</span> <span class="n">orgs</span><span class="p">[</span><span class="n">orgnames</span><span class="p">][</span><span class="s1">&#39;exchange_metab_nodes&#39;</span><span class="p">]</span>
+        <span class="n">metabolite_exchanged</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exc_met</span><span class="p">)</span>
+    <span class="c1"># Common exchange metabolites in different organisms</span>
+    <span class="n">common_exchange_metabolite</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="nb">set</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">set</span><span class="p">,</span> <span class="n">metabolite_exchanged</span><span class="p">))))</span>
+    <span class="n">common_exchange_metabolite</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="c1">#  Adding the common exchange metabolites to the graph</span>
+    <span class="k">for</span> <span class="n">orgnames</span> <span class="ow">in</span> <span class="n">orgs</span><span class="p">:</span>
+        <span class="n">renamed_exc_met</span> <span class="o">=</span> <span class="p">[</span><span class="n">orgnames</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span>
+                           <span class="n">comexcmet</span> <span class="k">for</span> <span class="n">comexcmet</span> <span class="ow">in</span> <span class="n">common_exchange_metabolite</span><span class="p">]</span>
+        <span class="n">number_exc_met</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">common_exchange_metabolite</span><span class="p">)))</span>
+        <span class="n">mod_exc_rxn_number</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Org_</span><span class="si">%s</span><span class="s1"> ER&#39;</span> <span class="o">%</span>
+                              <span class="n">orgnames</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">number_exc_met</span><span class="p">]</span>
+        <span class="n">mod_exc_rev_rxn_number</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Org_</span><span class="si">%s</span><span class="s1"> ERR&#39;</span> <span class="o">%</span>
+                                  <span class="n">orgnames</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">number_exc_met</span><span class="p">]</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">mod_exc_rxn_number</span><span class="p">,</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">mod_exc_rev_rxn_number</span><span class="p">,</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">common_exchange_metabolite</span><span class="p">,</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">renamed_exc_met</span><span class="p">,</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">renamed_exc_met</span><span class="p">)):</span>
+            <span class="n">namemap</span><span class="p">[</span><span class="n">mod_exc_rxn_number</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="n">common_exchange_metabolite</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">namemap</span><span class="p">[</span><span class="n">mod_exc_rev_rxn_number</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="n">common_exchange_metabolite</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="n">renamed_exc_met</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">mod_exc_rxn_number</span><span class="p">[</span><span class="n">k</span><span class="p">])])</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span>
+                <span class="p">[(</span><span class="n">mod_exc_rxn_number</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">common_exchange_metabolite</span><span class="p">[</span><span class="n">k</span><span class="p">])])</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span>
+                <span class="p">[(</span><span class="n">common_exchange_metabolite</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">mod_exc_rev_rxn_number</span><span class="p">[</span><span class="n">k</span><span class="p">])])</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="n">mod_exc_rev_rxn_number</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">renamed_exc_met</span><span class="p">[</span><span class="n">k</span><span class="p">])])</span>
+    <span class="c1">#  Adding the non common exchange metabolites to the graph</span>
+    <span class="k">for</span> <span class="n">orgnames</span> <span class="ow">in</span> <span class="n">orgs</span><span class="p">:</span>
+        <span class="n">metitems</span> <span class="o">=</span> <span class="n">orgs</span><span class="p">[</span><span class="n">orgnames</span><span class="p">][</span><span class="s1">&#39;exchange_metab_nodes&#39;</span><span class="p">]</span>
+        <span class="n">non_common_exc_met</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="n">metitems</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">common_exchange_metabolite</span><span class="p">))</span>
+        <span class="n">non_common_exc_met</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="n">renamed_non_common_exc_met</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">orgnames</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">non_common_exc_met</span><span class="p">]</span>
+        <span class="n">number_non_common_exc_met</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_common_exc_met</span><span class="p">)))</span>
+        <span class="n">mod_non_common_exc_rxn_number</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;Org_</span><span class="si">%s</span><span class="s1"> NCER&#39;</span> <span class="o">%</span> <span class="n">orgnames</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">number_non_common_exc_met</span><span class="p">]</span>
+        <span class="n">mod_non_common_exc_rev_rxn_number</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;Org_</span><span class="si">%s</span><span class="s1"> NCERR&#39;</span> <span class="o">%</span> <span class="n">orgnames</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">number_non_common_exc_met</span><span class="p">]</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">mod_non_common_exc_rxn_number</span><span class="p">,</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">mod_non_common_exc_rev_rxn_number</span><span class="p">,</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">non_common_exc_met</span><span class="p">,</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">renamed_non_common_exc_met</span><span class="p">,</span> <span class="n">bipartite</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">renamed_non_common_exc_met</span><span class="p">)):</span>
+            <span class="n">namemap</span><span class="p">[</span><span class="n">mod_non_common_exc_rxn_number</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="n">non_common_exc_met</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">namemap</span><span class="p">[</span><span class="n">mod_non_common_exc_rev_rxn_number</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                   <span class="p">]</span> <span class="o">=</span> <span class="n">non_common_exc_met</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span>
+                <span class="p">[(</span><span class="n">renamed_non_common_exc_met</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">mod_non_common_exc_rxn_number</span><span class="p">[</span><span class="n">k</span><span class="p">])])</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span>
+                <span class="p">[(</span><span class="n">mod_non_common_exc_rxn_number</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">non_common_exc_met</span><span class="p">[</span><span class="n">k</span><span class="p">])])</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span>
+                <span class="p">[(</span><span class="n">non_common_exc_met</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">mod_non_common_exc_rev_rxn_number</span><span class="p">[</span><span class="n">k</span><span class="p">])])</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span>
+                <span class="p">[(</span><span class="n">mod_non_common_exc_rev_rxn_number</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">renamed_non_common_exc_met</span><span class="p">[</span><span class="n">k</span><span class="p">])])</span>
+    <span class="k">return</span> <span class="n">G</span><span class="p">,</span> <span class="n">namemap</span>
+
+
+<div class="viewcode-block" id="create_graph"><a class="viewcode-back" href="../../modules.html#metquest.construct_graph.create_graph">[docs]</a><span class="k">def</span> <span class="nf">create_graph</span><span class="p">(</span><span class="n">path_name_with_models</span><span class="p">,</span> <span class="n">no_of_orgs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function creates bipartite graph of the organisms based on the</span>
+<span class="sd">    path provided and the number of organsisms. For instance, if a folder</span>
+<span class="sd">    has 3 model files, and the number of organisms is 2, 3 (3C2) different</span>
+<span class="sd">    bipartite graphs are created. The graph objects and the dictionary</span>
+<span class="sd">    are saved as gpickle and pickle files respectively.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path_name_with_models : str</span>
+<span class="sd">        Absolute path name of the folder containing the models.</span>
+<span class="sd">    no_of_orgs : int</span>
+<span class="sd">        Number of organisms to be used for creating the DiGraph.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    H : NetworkX DiGraph Object</span>
+<span class="sd">        Bipartite graph consisting of internal and exchange reactions in organisms</span>
+<span class="sd">    full_name_map : dict</span>
+<span class="sd">        Dictionary mapping the adhoc reaction names to reaction names in</span>
+<span class="sd">        the model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">organisms_reaction_data</span><span class="p">,</span> <span class="n">partial_name_map</span> <span class="o">=</span> \
+        <span class="n">fetch_reactions</span><span class="o">.</span><span class="n">segregate_reactions_from_models</span><span class="p">(</span><span class="n">path_name_with_models</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">organisms_reaction_data</span><span class="p">:</span>
+        <span class="n">organisms_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">organisms_reaction_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">all_possible_combis</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span>
+            <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">organisms_names</span><span class="p">))),</span> <span class="nb">int</span><span class="p">(</span><span class="n">no_of_orgs</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">all_possible_combis</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ncom</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">all_possible_combis</span><span class="p">)):</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                <span class="n">current_combination</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">numincom</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">all_possible_combis</span><span class="p">[</span><span class="n">ncom</span><span class="p">])):</span>
+                    <span class="n">current_combination</span><span class="p">[</span><span class="n">organisms_names</span><span class="p">[</span><span class="n">all_possible_combis</span><span class="p">[</span><span class="n">ncom</span><span class="p">][</span><span class="n">numincom</span><span class="p">]]]</span> <span class="o">=</span> \
+                        <span class="n">organisms_reaction_data</span><span class="p">[</span><span class="n">organisms_names</span><span class="p">[</span><span class="n">all_possible_combis</span><span class="p">[</span><span class="n">ncom</span><span class="p">][</span><span class="n">numincom</span><span class="p">]]]</span>
+                    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span> <span class="o">+</span> \
+                        <span class="n">organisms_names</span><span class="p">[</span><span class="n">all_possible_combis</span><span class="p">[</span><span class="n">ncom</span><span class="p">]</span>
+                                        <span class="p">[</span><span class="n">numincom</span><span class="p">]]</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span>
+                <span class="n">H</span> <span class="o">=</span> <span class="n">_create_graph_with_internal_reaction</span><span class="p">(</span><span class="n">current_combination</span><span class="p">)</span>
+                <span class="n">H</span><span class="p">,</span> <span class="n">full_name_map</span> <span class="o">=</span> <span class="n">_create_graph_with_exchange_reactions</span><span class="p">(</span>
+                    <span class="n">H</span><span class="p">,</span> <span class="n">current_combination</span><span class="p">,</span> <span class="n">partial_name_map</span><span class="p">)</span>              
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of edges in graph&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">H</span><span class="o">.</span><span class="n">edges</span><span class="p">()))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of nodes in graph&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">H</span><span class="o">.</span><span class="n">nodes</span><span class="p">()))</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">path_name_with_models</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">W_OK</span><span class="p">):</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span> <span class="o">+</span> <span class="s1">&#39;namemap&#39;</span> <span class="o">+</span> <span class="s1">&#39;.pickle&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">filetodump</span><span class="p">:</span>
+                        <span class="n">dump</span><span class="p">(</span><span class="n">full_name_map</span><span class="p">,</span> <span class="n">filetodump</span><span class="p">)</span>
+                    <span class="n">nx</span><span class="o">.</span><span class="n">write_gpickle</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">+</span> <span class="s1">&#39;.gpickle&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Graph and namemap saved for file(s) in&#39;</span><span class="p">,</span> <span class="n">path_name_with_models</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path_name_with_models</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s1">&#39;Number of organisms for creating a consortium graph is more than the models given&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Program will now exit&#39;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cannot create graph&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">H</span><span class="p">,</span> <span class="n">full_name_map</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Aarthi Ravikrishnan.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.26',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
