@@ -22,7 +22,7 @@ Authors
 
 -  `Aarthi Ravikrishnan <https://github.com/aarthi31>`__
 -  Meghana Nasre
--  `Karthik Raman <https://github.com/karthikraman>`__
+-  `Karthik Raman <https://github.com/ramanlab>`__
 
 
 License
