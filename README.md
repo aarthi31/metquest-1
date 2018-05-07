@@ -6,7 +6,7 @@ possible pathways from metabolic networks between the source and the
 target metabolites. MetQuest requires the genome-scale metabolic
 reconstructions, set of seed, source and target metabolites and the
 pathway length cut-off. MetQuest is compatible with Python 3 and is
-OS-independent.
+OS-independent. An extensive documentation can be found [here](http://metquestdoc.readthedocs.io/)
 
 Authors
 =======
