@@ -117,8 +117,8 @@ python3 execute_metquest.py <path containing the input folder>
 ### From python console
 
 ``` 
->>>import metquest
->>>metquest.execute_all_codes()
+>>> import metquest
+>>> metquest.execute_all_codes()
 ```
 
 When prompted, enter the path containing the folder with all the data files
@@ -128,8 +128,8 @@ When prompted, enter the path containing the folder with all the data files
 In the python console, type the following
 
 ```
->>>import metquest
->>>metquest.example.run_this_example()
+>>> import metquest
+>>> metquest.example.run_this_example()
 ```
 
 This will run the example files.
