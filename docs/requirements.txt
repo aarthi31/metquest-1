@@ -1,2 +1,5 @@
 sphinx==1.6.5
 numpy
+networkx
+scipy
+cobra
