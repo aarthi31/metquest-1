@@ -43,6 +43,8 @@ def find_pathways(G, seed_mets_input, path_len_cutoff, *args):
     cyclic_pathways : dict
         Dictionary of dictionary containing cyclic pathways of different sizes
         identified for every metabolite.
+    scope : set
+        Set of metabolites which can be synthesised
     """
     global succ, pred, lower_bound_metabolite, maxnumpath, seedmets, \
         pathway_table, cyclic_pathways
@@ -120,7 +122,7 @@ def find_pathways(G, seed_mets_input, path_len_cutoff, *args):
     toc = clock()
     timetaken = toc - tic
     print('Time taken', timetaken)
-    return pathway_table, cyclic_pathways
+    return pathway_table, cyclic_pathways, scope
 
 
 def _first_round_calculations(mets_needed, currentcolumnidx, rxns, val):
