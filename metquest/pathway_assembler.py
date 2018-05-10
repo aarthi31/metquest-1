@@ -120,7 +120,7 @@ def find_pathways(G, seed_mets_input, path_len_cutoff, *args):
     toc = clock()
     timetaken = toc - tic
     print('Time taken', timetaken)
-    return pathway_table, cyclic_pathways, scope
+    return pathway_table, cyclic_pathways
 
 
 def _first_round_calculations(mets_needed, currentcolumnidx, rxns, val):
