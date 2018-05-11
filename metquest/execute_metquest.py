@@ -266,7 +266,7 @@ def print_summary(scope, currenttarmet, pathway_table, cutoff, cyclic_pathways, 
             for pathways in pathway_table[currenttarmet][plen]:
                 for reactions in pathways:
                     all_reactions_involved.append(reactions)
-        find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currenttarmet,
+        exchange_candidates_inverted_dict = find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currenttarmet,
                                               seed_metabolites, namemap, G)
         most_different_paths, only_source_to_target = find_pathways_starting_from_source(source_metabolites, pathway_table,
                                                                                          currenttarmet, cutoff, G)
@@ -434,6 +434,7 @@ def find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currentt
                 print(namemap[rxns], list(pred(rxns)), list(succ(rxns)))
         else:
             print('No metabolite exchanged')
+	return exchange_candidates_inverted_dict
 
 
 def find_jaccard_between_paths(only_source_to_target):
