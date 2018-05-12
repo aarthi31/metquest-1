@@ -23,7 +23,7 @@ def find_pathways(G, seed_mets_input, path_len_cutoff, *args):
     seed_mets_input : set
         Set of seed metabolites including the source
     path_len_cutoff : int
-        Maximum size of the pathways  
+        Maximum size of the pathways
     *args
         Used to decide if a particular combination has to be evaluated or not.
         i.e., if the number of pathways produced for two different metabolites
@@ -43,7 +43,10 @@ def find_pathways(G, seed_mets_input, path_len_cutoff, *args):
     cyclic_pathways : dict
         Dictionary of dictionary containing cyclic pathways of different sizes
         identified for every metabolite.
+    scope : set
+        Set of metabolites which can be synthesised
     """
+
     global succ, pred, lower_bound_metabolite, maxnumpath, seedmets, \
         pathway_table, cyclic_pathways
     pathway_table = {}
@@ -99,7 +102,7 @@ def find_pathways(G, seed_mets_input, path_len_cutoff, *args):
                 if metssucc not in seedmets:
                     pathway_table[metssucc][1].append(set([rxns]))
 
-# For filling values from the second column
+	# For filling values from the second column
     for currentcolumnidx in range(2, path_len_cutoff+1):
         for rxns in status_dict:  # rxns_to_visit:
             # To eliminate seed metabolites, whose column value
@@ -190,8 +193,8 @@ def _first_round_calculations(mets_needed, currentcolumnidx, rxns, val):
                                                          first_discovery_step, currentcolumnidx - 1)
                     for partitions in all_partitions:
                         _find_all_rxn_combination_firstround(rxns, partitions, other_mets_not_in_comb,
-                                                            temp_rxn_list, number_of_pathways_found,
-                                                            currentcolumnidx)
+                                                             temp_rxn_list, number_of_pathways_found,
+                                                             currentcolumnidx)
 
 
 def _find_all_rxn_combination_firstround(rxns, partitions, other_mets_not_in_comb,
