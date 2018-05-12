@@ -271,6 +271,7 @@ def print_summary(scope, currenttarmet, pathway_table, cutoff, cyclic_pathways, 
             for pathways in pathway_table[currenttarmet][plen]:
                 for reactions in pathways:
                     all_reactions_involved.append(reactions)
+<<<<<<< HEAD
         exchange_candidates_inverted_dict = find_pathways_involving_exchange_mets(number_of_xml,
                                                                                   pathway_table,
                                                                                   currenttarmet,
@@ -280,6 +281,12 @@ def print_summary(scope, currenttarmet, pathway_table, cutoff, cyclic_pathways, 
                                                                                          pathway_table,
                                                                                          currenttarmet,
                                                                                          cutoff, G)
+=======
+        exchange_candidates_inverted_dict = find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currenttarmet,
+                                              seed_metabolites, namemap, G)
+        most_different_paths, only_source_to_target = find_pathways_starting_from_source(source_metabolites, pathway_table,
+                                                                                         currenttarmet, cutoff, G)
+>>>>>>> 76b692f4b0c9b47cd7ec45211fbf5b0ef8b5fd6a
         # Two most different paths
         if most_different_paths:
             print('Number of branched pathways from source whose size <=',
@@ -408,10 +415,16 @@ def find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currentt
     Returns
     -------
     exchange_candidates_inverted_dict : dict
+<<<<<<< HEAD
         Dictionary containing the number of times an exchange reaction is
         repeated
+=======
+    	Dictionary containing the number of times an exchange reaction is
+	repeated
+>>>>>>> 76b692f4b0c9b47cd7ec45211fbf5b0ef8b5fd6a
 
     """
+
     pred = G.predecessors
     succ = G.successors
     exchange_reactions = []
@@ -425,8 +438,12 @@ def find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currentt
                         #  reactions in the models.
                         if 'ER' in reactions:
                             exchange_reactions.append(reactions)
+<<<<<<< HEAD
         exchange_candidates = Counter(exchange_reactions)
 
+=======
+        exchange_candidates = Counter(exchange_reactions)    
+>>>>>>> 76b692f4b0c9b47cd7ec45211fbf5b0ef8b5fd6a
         for keys, values in exchange_candidates.items():
             exchange_candidates_inverted_dict[values] = \
                 exchange_candidates_inverted_dict.get(values, [])

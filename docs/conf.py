@@ -36,7 +36,7 @@ author = 'Aarthi Ravikrishnan'
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '0.1.26'
+release = '0.1.28'
 
 
 # -- General configuration ---------------------------------------------------
@@ -84,6 +84,7 @@ exclude_patterns = []
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+add_module_names = False
 
 # -- Options for HTML output -------------------------------------------------
 

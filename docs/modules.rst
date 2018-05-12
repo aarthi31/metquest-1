@@ -2,7 +2,7 @@
 MetQuest modules
 ****************
 
-metquest.construct\_graph module
+construct\_graph module
 --------------------------------
 
 .. automodule:: metquest.construct_graph
@@ -10,7 +10,7 @@ metquest.construct\_graph module
     :undoc-members:
     :show-inheritance:
 
-metquest.execute\_metquest module
+execute\_metquest module
 ---------------------------------
 
 .. automodule:: metquest.execute_metquest
@@ -18,7 +18,7 @@ metquest.execute\_metquest module
     :undoc-members:
     :show-inheritance:
 
-metquest.fetch\_reactions module
+fetch\_reactions module
 --------------------------------
 
 .. automodule:: metquest.fetch_reactions
@@ -26,7 +26,7 @@ metquest.fetch\_reactions module
     :undoc-members:
     :show-inheritance:
 
-metquest.generate\_partitions module
+generate\_partitions module
 ------------------------------------
 
 .. automodule:: metquest.generate_partitions
@@ -34,7 +34,7 @@ metquest.generate\_partitions module
     :undoc-members:
     :show-inheritance:
 
-metquest.get\_reaction\_types module
+get\_reaction\_types module
 ------------------------------------
 
 .. automodule:: metquest.get_reaction_types
@@ -42,7 +42,7 @@ metquest.get\_reaction\_types module
     :undoc-members:
     :show-inheritance:
 
-metquest.guided\_bfs module
+guided\_bfs module
 ---------------------------
 
 .. automodule:: metquest.guided_bfs
@@ -50,7 +50,7 @@ metquest.guided\_bfs module
     :undoc-members:
     :show-inheritance:
 
-metquest.package\_data module
+package\_data module
 -----------------------------
 
 .. automodule:: metquest.package_data
@@ -58,7 +58,7 @@ metquest.package\_data module
     :undoc-members:
     :show-inheritance:
 
-metquest.pathway\_assembler module
+pathway\_assembler module
 ----------------------------------
 
 .. automodule:: metquest.pathway_assembler

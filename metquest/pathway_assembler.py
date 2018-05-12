@@ -18,7 +18,7 @@ def find_pathways(G, seed_mets_input, path_len_cutoff, *args):
 
     Parameters
     ----------
-    G : NetworkX Graph Object
+    G : NetworkX DiGraph Object
         Bipartite graph of the metabolic network
     seed_mets_input : set
         Set of seed metabolites including the source

@@ -22,17 +22,7 @@ Authors
 
 -  `Aarthi Ravikrishnan <https://github.com/aarthi31>`__
 -  Meghana Nasre
--  `Karthik Raman <https://github.com/karthikraman>`__
-
-
-License
-=======
-
-1. By using the software enclosed in this package (MetQuest), you agree to become bound by the terms of this license. 
-2. This software is for your internal use only. Please DO NOT redistribute it without the permission from the authors.
-3. This software is for **academic use only**. No other usage is allowed without a written permission from the authors. It cannot be used for any commercial interest.
-4. The authors appreciate it if you can send us your feedback including any bug report.
-5. The authors do not hold any responsibility for the correctness of this software, though we cross-checked all experimental results.
+-  `Karthik Raman <https://github.com/ramanlab>`__
 
 
 Acknowledgments
@@ -41,7 +31,7 @@ This work was supported by the Indian Institute of Technology Madras grant ERP/1
 
 .. toctree::
    :maxdepth: 2
-   :caption: Installation   
+   :caption: Getting started   
    :hidden:
 
    installing
