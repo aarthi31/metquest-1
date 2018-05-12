@@ -397,12 +397,16 @@ def find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currentt
 
     Returns
     -------
-    None
+    exchange_candidates_inverted_dict : dict
+    	Dictionary containing the number of times an exchange reaction is
+	repeated
 
     """
+
     pred = G.predecessors
     succ = G.successors
     exchange_reactions = []
+    exchange_candidates_inverted_dict = {}
     if number_of_xml > 1:
         for plen in pathway_table[currenttarmet]:
             for pathways in pathway_table[currenttarmet][plen]:
@@ -412,8 +416,7 @@ def find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currentt
                         #  reactions in the models.
                         if 'ER' in reactions:
                             exchange_reactions.append(reactions)
-        exchange_candidates = Counter(exchange_reactions)
-        exchange_candidates_inverted_dict = {}
+        exchange_candidates = Counter(exchange_reactions)    
         for keys, values in exchange_candidates.items():
             exchange_candidates_inverted_dict[values] = \
                 exchange_candidates_inverted_dict.get(values, [])
@@ -434,7 +437,7 @@ def find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currentt
                 print(namemap[rxns], list(pred(rxns)), list(succ(rxns)))
         else:
             print('No metabolite exchanged')
-	return exchange_candidates_inverted_dict
+    return exchange_candidates_inverted_dict
 
 
 def find_jaccard_between_paths(only_source_to_target):
