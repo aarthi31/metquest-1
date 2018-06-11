@@ -280,10 +280,6 @@ def print_summary(scope, currenttarmet, pathway_table, cutoff, cyclic_pathways, 
                                                                                          pathway_table,
                                                                                          currenttarmet,
                                                                                          cutoff, G)
-        exchange_candidates_inverted_dict = find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currenttarmet,
-                                              seed_metabolites, namemap, G)
-        most_different_paths, only_source_to_target = find_pathways_starting_from_source(source_metabolites, pathway_table,
-                                                                                         currenttarmet, cutoff, G)
         # Two most different paths
         if most_different_paths:
             print('Number of branched pathways from source whose size <=',
@@ -414,8 +410,8 @@ def find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currentt
     exchange_candidates_inverted_dict : dict
         Dictionary containing the number of times an exchange reaction is
         repeated
-    """
 
+    """
     pred = G.predecessors
     succ = G.successors
     exchange_reactions = []
@@ -430,7 +426,7 @@ def find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currentt
                         if 'ER' in reactions:
                             exchange_reactions.append(reactions)
         exchange_candidates = Counter(exchange_reactions)
-        exchange_candidates = Counter(exchange_reactions)    
+
         for keys, values in exchange_candidates.items():
             exchange_candidates_inverted_dict[values] = \
                 exchange_candidates_inverted_dict.get(values, [])
@@ -510,64 +506,76 @@ def execute_all_codes():
 
     if '~' in inputfoldername:
         inputfoldername = os.path.expanduser(inputfoldername)
-    list_of_files = os.listdir(inputfoldername)
-    for foldernames in list_of_files:
-        # To go through only folders
-        if os.path.isdir(os.path.join(inputfoldername, foldernames)):
-            current_evaluation_folder = os.path.join(
-                inputfoldername, foldernames)
-            number_of_files_in_current_folder = os.listdir(
-                current_evaluation_folder)
-            number_of_xml = len(
-                [filenames for filenames in number_of_files_in_current_folder if '.xml' in filenames])
-            print('Currently evaluating files in', foldernames)
-            print('Number of networks', number_of_xml)
-            G, namemap = create_graph(
-                current_evaluation_folder, number_of_xml)
-            for files in os.listdir('.'):
-                if files.endswith('.txt'):
-                    if files.startswith('seed'):
-                        with open(files, 'r') as seedfile:
-                            seedmetslist = seedfile.read().splitlines()
-                        seed_metabolites = set(seedmetslist)
-                    elif files.startswith('source'):
-                        with open(files, 'r') as sourcefile:
-                            source_metabolites = sourcefile.read().splitlines()
-                    elif files.startswith('target'):
-                        with open(files, 'r') as targetfile:
-                            # Target metabolites can be multiple values
-                            targetmetabolites = targetfile.read().splitlines()
-                    elif files.startswith('cutoff'):
-                        with open(files, 'r') as cutofffile:
-                            cutoff_list = cutofffile.read().splitlines()  # Cutoff can be multiple values
-            for mets in source_metabolites:
-                seed_metabolites.add(mets)
-            metfoundingraph = True
-            for metabs in seed_metabolites:
-                if metabs not in G:
-                    print(metabs, 'not in G. MetQuest will not be executed')
-                    print('Please check the metabolite names')
-                    metfoundingraph = False
-                    break
-            for metabs in targetmetabolites:
-                if metabs not in G:
-                    print(metabs, 'not in G. MetQuest will not be executed')
-                    print('Please check the metabolite names')
-                    metfoundingraph = False
-                    break
-            if metfoundingraph:
-                folder_to_create = 'Results/'
-                if not os.path.exists(folder_to_create):
-                    os.makedirs(folder_to_create)
-                for currenttarmet in targetmetabolites:  # multiple target mets
-                    for cutoff in cutoff_list:  # multiple cutoffs
-                        pathway_table, cyclic_pathways, scope = find_pathways(
-                            G, seed_metabolites, int(cutoff))
-                        print_summary(scope, currenttarmet, pathway_table, cutoff, cyclic_pathways,
-                                      namemap, source_metabolites, seed_metabolites,
-                                      number_of_xml, G)
-                        write_output_to_file(pathway_table, currenttarmet, cutoff,
-                                             cyclic_pathways, folder_to_create,
-                                             namemap, source_metabolites, G)
-                print('\n')
-            os.chdir('../')
+    list_of_files = []
+    try:
+        list_of_files = next(os.walk(inputfoldername))[1]
+        if list_of_files:
+        #    list_of_files = os.listdir(inputfoldername)   
+            for foldernames in list_of_files:
+                
+                # To go through only folders
+                if os.path.isdir(os.path.join(inputfoldername, foldernames)):
+                    current_evaluation_folder = os.path.join(
+                        inputfoldername, foldernames)
+                    number_of_files_in_current_folder = os.listdir(
+                        current_evaluation_folder)
+                    number_of_xml = len(
+                        [filenames for filenames in number_of_files_in_current_folder if '.xml' in filenames])
+                    print('Currently evaluating files in', foldernames)
+                    print('Number of networks', number_of_xml)
+                    G, namemap = create_graph(
+                        current_evaluation_folder, number_of_xml)
+                    for files in os.listdir('.'):
+                        if files.endswith('.txt'):
+                            if files.startswith('seed'):
+                                with open(files, 'r') as seedfile:
+                                    seedmetslist = seedfile.read().splitlines()
+                                seed_metabolites = set(seedmetslist)
+                            elif files.startswith('source'):
+                                with open(files, 'r') as sourcefile:
+                                    source_metabolites = sourcefile.read().splitlines()
+                            elif files.startswith('target'):
+                                with open(files, 'r') as targetfile:
+                                    # Target metabolites can be multiple values
+                                    targetmetabolites = targetfile.read().splitlines()
+                            elif files.startswith('cutoff'):
+                                with open(files, 'r') as cutofffile:
+                                    cutoff_list = cutofffile.read().splitlines()  # Cutoff can be multiple values
+                    for mets in source_metabolites:
+                        seed_metabolites.add(mets)
+                    metfoundingraph = True
+                    for metabs in seed_metabolites:
+                        if metabs not in G:
+                            print(metabs, 'not in G. MetQuest will not be executed')
+                            print('Please check the metabolite names')
+                            metfoundingraph = False
+                            break
+                    for metabs in targetmetabolites:
+                        if metabs not in G:
+                            print(metabs, 'not in G. MetQuest will not be executed')
+                            print('Please check the metabolite names')
+                            metfoundingraph = False
+                            break
+                    if metfoundingraph:
+                        folder_to_create = 'Results/'
+                        if not os.path.exists(folder_to_create):
+                            os.makedirs(folder_to_create)
+                        for currenttarmet in targetmetabolites:  # multiple target mets
+                            for cutoff in cutoff_list:  # multiple cutoffs
+                                pathway_table, cyclic_pathways, scope = find_pathways(
+                                    G, seed_metabolites, int(cutoff))
+                                print_summary(scope, currenttarmet, pathway_table, cutoff, cyclic_pathways,
+                                              namemap, source_metabolites, seed_metabolites,
+                                              number_of_xml, G)
+                                write_output_to_file(pathway_table, currenttarmet, cutoff,
+                                                     cyclic_pathways, folder_to_create,
+                                                     namemap, source_metabolites, G)
+                        print('\n')
+                    os.chdir('../')
+        else:
+            print('Folder with data files not found')
+            print('Please follow the prescribed folder format')
+    except:
+        print('Path name is incorrect. Please check the path name')
+
+        
