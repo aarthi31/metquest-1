@@ -118,3 +118,7 @@ In the python console, type the following
 ```
 
 This will run the example files.
+
+Citation 
+========
+Ravikrishnan, A., Nasre, M. & Raman, K. Enumerating all possible biosynthetic pathways in metabolic networks. Sci. Rep. 8, 9932 (2018).
