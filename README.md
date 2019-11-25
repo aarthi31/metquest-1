@@ -8,6 +8,10 @@ reconstructions, set of seed, source and target metabolites and the
 pathway length cut-off. MetQuest is compatible with Python 3 and is
 OS-independent. An extensive documentation can be found [here](http://metquestdoc.readthedocs.io/).
 
+Citation 
+========
+Ravikrishnan, A., Nasre, M. & Raman, K. Enumerating all possible biosynthetic pathways in metabolic networks. *Sci. Rep.* **8**:9932 (2018).
+
 Authors
 =======
 
@@ -125,6 +129,3 @@ In the python console, type the following
 
 This will run the example files.
 
-Citation 
-========
-Ravikrishnan, A., Nasre, M. & Raman, K. Enumerating all possible biosynthetic pathways in metabolic networks. Sci. Rep. 8, 9932 (2018).
