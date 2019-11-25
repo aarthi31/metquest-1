@@ -18,9 +18,15 @@ Authors
 Acknowledgments
 ===============
 
-This work was supported by the Indian Institute of Technology Madras
-grant ERP/1314/004/RESF/KARH to KR and the INSPIRE fellowship,
-Department of Science and Technology, Government of India to AR.
+* Indian Institute of Technology Madras grant ERP/1314/004/RESF/KARH to [Karthik Raman](https://github.com/karthikraman)
+* INSPIRE fellowship, Department of Science and Technology, Government of India to [Aarthi Ravikrishnan](https://github.com/aarthi31).
+* High Performance Computing Environment, P G Senapathy Centre for Computing Resources, IIT Madras
+* The work was partly supported by a research grantRB/18-19/CSE/002/INTI/BRAV from Intel Technology India Pvt Ltd to B Ravindran
+* [Initiative for Biological Systems Engineering](https://ibse.iitm.ac.in/)
+* [Robert Bosch Centre for Data Science and Artificial Intelligence (RBCDSAI)](https://rbcdsai.iitm.ac.in/)
+
+<img title="IBSE logo" src="https://github.com/RBC-DSAI-IITM/rbc-dsai-iitm.github.io/blob/master/images/IBSE_logo.png" height="200" width="200"><img title="RBC-DSAI logo" src="https://github.com/RBC-DSAI-IITM/rbc-dsai-iitm.github.io/blob/master/images/logo.jpg" height="200" width="351">
+
 
 Installation
 ------------
