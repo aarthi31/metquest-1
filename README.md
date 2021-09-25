@@ -25,7 +25,6 @@ Acknowledgments
 * Indian Institute of Technology Madras grant ERP/1314/004/RESF/KARH to [Karthik Raman](https://github.com/karthikraman)
 * INSPIRE fellowship, Department of Science and Technology, Government of India to [Aarthi Ravikrishnan](https://github.com/aarthi31).
 * High Performance Computing Environment, P G Senapathy Centre for Computing Resources, IIT Madras
-* The work was partly supported by a research grantRB/18-19/CSE/002/INTI/BRAV from Intel Technology India Pvt Ltd to B Ravindran
 * [Initiative for Biological Systems Engineering](https://ibse.iitm.ac.in/)
 * [Robert Bosch Centre for Data Science and Artificial Intelligence (RBCDSAI)](https://rbcdsai.iitm.ac.in/)
 
