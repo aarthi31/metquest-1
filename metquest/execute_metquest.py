@@ -50,89 +50,92 @@ def write_output_to_file(pathway_table, currenttarmet, cutoff, cyclic_pathways,
     path_count = []
     cyclic_pathway_count = []
     if currenttarmet in pathway_table:
-	    for plen in pathway_table[currenttarmet]:
-	        all_pathways_count.append(
-	            len(pathway_table[currenttarmet][plen]))
-	        if plen <= int(cutoff):
-	            path_count.append(
-	                len(pathway_table[currenttarmet][plen]))
-	    if currenttarmet in cyclic_pathways:
-	        for plen in cyclic_pathways[currenttarmet]:
-	            if plen <= int(cutoff):
-	                cyclic_pathway_count.append(
-	                    len(cyclic_pathways[currenttarmet][plen]))
-	        cycfname = folder_to_create + 'cyclic_pathways_' + currenttarmet.replace(' ', '') + \
-	            '_' + 'leq_plen_' + str(cutoff) + '.txt'
-	        pathnumcount = 0
-	        with open(cycfname, 'w') as filetowrite:
-	            print('\nWriting cyclic pathways to a file')
-	            for idx in cyclic_pathways[currenttarmet]:
-	                if idx <= int(cutoff):
-	                    filetowrite.write('Path length ' +
-	                                      str(idx) + '\n')
-	                for items in cyclic_pathways[currenttarmet][idx]:
-	                    pathnumcount += 1
-	                    filetowrite.write(
-	                        str(pathnumcount) + '\n')
-	                    for entities in list(items):
-	                        filetowrite.write(
-	                            namemap[entities] + '\t' + ' + '.join(pred(entities)) +
-	                            '->' + ' + '.join(succ(entities)))
-	                        filetowrite.write('\n')
-	                    filetowrite.write('--------------------\n')
+        for plen in pathway_table[currenttarmet]:
+            all_pathways_count.append(
+                len(pathway_table[currenttarmet][plen]))
+            if plen <= int(cutoff):
+                path_count.append(
+                    len(pathway_table[currenttarmet][plen]))
+        if currenttarmet in cyclic_pathways:
+            for plen in cyclic_pathways[currenttarmet]:
+                if plen <= int(cutoff):
+                    cyclic_pathway_count.append(
+                        len(cyclic_pathways[currenttarmet][plen]))
+            cycfname = folder_to_create + 'cyclic_pathways_' + currenttarmet.replace(' ', '') + \
+                '_' + 'leq_plen_' + str(cutoff) + '.txt'
+            pathnumcount = 0
+            with open(cycfname, 'w') as filetowrite:
+                print('\nWriting cyclic pathways to a file')
+                for idx in cyclic_pathways[currenttarmet]:
+                    if idx <= int(cutoff):
+                        filetowrite.write('Path length ' +
+                                          str(idx) + '\n')
+                    for items in cyclic_pathways[currenttarmet][idx]:
+                        pathnumcount += 1
+                        filetowrite.write(
+                            str(pathnumcount) + '\n')
+                        for entities in list(items):
+                            filetowrite.write(
+                                namemap[entities] + '\t' + ' + '.join(pred(entities)) +
+                                '->' + ' + '.join(succ(entities)))
+                            filetowrite.write('\n')
+                        filetowrite.write('--------------------\n')
 
-	    if int(cutoff) in pathway_table[currenttarmet]:
-	        for sourcemets in source_metabolites:
-	            seedfname = folder_to_create + 'branched_pathways_from_seed_' + \
-	                    currenttarmet.replace(' ', '') + \
-	                    '_' + 'leq_plen_' + str(cutoff) + '.txt'
-	            pathnumcount = 0
-	            with open(seedfname, 'w') as filetowrite:
-	                print('Writing branched pathways (from seed) to a file')
-	                for idx in pathway_table[currenttarmet]:
-	                    if idx <= int(cutoff):
-	                        filetowrite.write('Path length ' +
-	                                          str(idx) + '\n')
-	                        for items in pathway_table[currenttarmet][idx]:
-	                            pathnumcount += 1
-	                            filetowrite.write(
-	                                str(pathnumcount) + '\n')
-	                            for entities in list(items):
-	                                filetowrite.write(
-	                                    namemap[entities] + '\t' +
-	                                    ' + '.join(pred(entities))
-	                                    + '->' + ' + '.join(succ(entities)))
-	                                filetowrite.write('\n')
-	                            filetowrite.write(
-	                                '--------------------\n')
-	                        filetowrite.write('--------------------\n')
-	            only_source_to_target = []
+        if int(cutoff) in pathway_table[currenttarmet]:
+            for sourcemets in source_metabolites:
+                seedfname = folder_to_create + 'branched_pathways_from_seed_' + \
+                        currenttarmet.replace(' ', '') + \
+                        '_' + 'leq_plen_' + str(cutoff) + '.txt'
+                pathnumcount = 0
+                with open(seedfname, 'w') as filetowrite:
+                    print('Writing branched pathways (from seed) to a file')
+                    for idx in pathway_table[currenttarmet]:
+                        if idx <= int(cutoff):
+                            filetowrite.write('Path length ' +
+                                              str(idx) + '\n')
+                            for items in pathway_table[currenttarmet][idx]:
+                                pathnumcount += 1
+                                filetowrite.write(
+                                    str(pathnumcount) + '\n')
+                                for entities in list(items):
+                                    filetowrite.write(
+                                        namemap[entities] + '\t' +
+                                        ' + '.join(pred(entities))
+                                        + '->' + ' + '.join(succ(entities)))
+                                    filetowrite.write('\n')
+                                filetowrite.write(
+                                    '--------------------\n')
+                            filetowrite.write('--------------------\n')
+                only_source_to_target = []
 
-	            for sourcemets in source_metabolites:
-	                for idx in pathway_table[currenttarmet]:
-	                    if idx <= int(cutoff):
-	                        for items in pathway_table[currenttarmet][idx]:
-	                            if set(succ(sourcemets)).intersection(items):
-	                                only_source_to_target.append(
-	                                    list(items))
-	                if only_source_to_target:
-	                    sourcefname = folder_to_create + 'branched_pathways_from_source_' + \
-	                                currenttarmet.replace(' ', '') + \
-	                                '_' + 'leq_plen_' + str(cutoff) + '.txt'
+                for sourcemets in source_metabolites:
+                    for idx in pathway_table[currenttarmet]:
+                        if idx <= int(cutoff):
+                            for items in pathway_table[currenttarmet][idx]:
+                                if set(succ(sourcemets)).intersection(items):
+                                    only_source_to_target.append(
+                                        list(items))
+                    if only_source_to_target:
+                        sourcefname = folder_to_create + 'branched_pathways_from_source_' + \
+                                    currenttarmet.replace(' ', '') + \
+                                    '_' + 'leq_plen_' + str(cutoff) + '.txt'
 
-	                    with open(sourcefname, 'w') as filetowrite:
-	                        print('Writing branched pathways (from source) to a file \n')
-	                        for currentidx, listentries in enumerate(only_source_to_target):
-	                            filetowrite.write(str(currentidx+1) + '\n')
-	                            filetowrite.write('Path length ' +
-	                                              str(len(listentries)) + '\n')
-	                            for entities in listentries:
-	                                filetowrite.write(
-	                                    namemap[entities] + '\t' +
-	                                    ' + '.join(pred(entities))
-	                                    + '->' + ' + '.join(succ(entities)))
-	                                filetowrite.write('\n')
-	                            filetowrite.write('--------------------\n')
+                        with open(sourcefname, 'w') as filetowrite:
+                            print('Writing branched pathways (from source) to a file \n')
+                            for currentidx, listentries in enumerate(only_source_to_target):
+                                filetowrite.write(str(currentidx+1) + '\n')
+                                filetowrite.write('Path length ' +
+                                                  str(len(listentries)) + '\n')
+                                for entities in listentries:
+                                    filetowrite.write(
+                                        namemap[entities] + '\t' +
+                                        ' + '.join(pred(entities))
+                                        + '->' + ' + '.join(succ(entities)))
+                                    filetowrite.write('\n')
+                                filetowrite.write('--------------------\n')
+    else:
+        print(currenttarmet, ': Target could not be found.')
+        print('Consider changing the cut-off or the seed metabolite set')
 
 
 def find_pathways_starting_from_source(source_metabolites, pathway_table, currenttarmet, cutoff, G):
@@ -163,30 +166,34 @@ def find_pathways_starting_from_source(source_metabolites, pathway_table, curren
         list of list containing all pathways starting from source metabolite
 
     """
+
     succ = G.successors
     most_different_paths = {}
     only_source_to_target = []
-    for sourcemets in source_metabolites:
-        for idx in pathway_table[currenttarmet]:
-            if idx <= int(cutoff):
-                for items in pathway_table[currenttarmet][idx]:
-                    if set(succ(sourcemets)).intersection(items):
-                        only_source_to_target.append(
-                            list(items))
-        if len(only_source_to_target) > 1: 
-            # Sometimes there can be only one pathway producing target
-            # To find most different paths from source
-            j_value, rxn_comb = find_jaccard_between_paths(
-                only_source_to_target)
-            min_j_index = j_value.index(min(j_value))
-            most_different_paths[sourcemets] = rxn_comb[min_j_index]
+    if currenttarmet in pathway_table:
+        for sourcemets in source_metabolites:
+            for idx in pathway_table[currenttarmet]:
+                if idx <= int(cutoff):
+                    for items in pathway_table[currenttarmet][idx]:
+                        if set(succ(sourcemets)).intersection(items):
+                            only_source_to_target.append(
+                                list(items))
+            if len(only_source_to_target) > 1:
+                # Sometimes there can be only one pathway producing target
+                # To find most different paths from source
+                j_value, rxn_comb = find_jaccard_between_paths(
+                    only_source_to_target)
+                min_j_index = j_value.index(min(j_value))
+                most_different_paths[sourcemets] = rxn_comb[min_j_index]
+    else:
+        print(currenttarmet, ': Target could not be found.')
+        print('Consider changing the cut-off or the seed metabolite set')
     return most_different_paths, only_source_to_target
 
 
 
 def print_summary(scope, currenttarmet, pathway_table, cutoff, cyclic_pathways, namemap,
-                  source_metabolites, folder_to_create, seed_metabolites,
-                  number_of_xml, G):
+                  source_metabolites, seed_metabolites, number_of_xml, G):
     """
     This function prints the results summary obtained from the pathways, i.e.,
     1. Number of metabolites in scope
@@ -222,8 +229,6 @@ def print_summary(scope, currenttarmet, pathway_table, cutoff, cyclic_pathways, 
         the model
     source_metabolites : list
         List of source metabolites
-    folder_to_create : str
-        Name of the folder where results have to be written
     seed_metabolites : set
         Set of seed metabolites including the source
     number_of_xml : int
@@ -266,10 +271,15 @@ def print_summary(scope, currenttarmet, pathway_table, cutoff, cyclic_pathways, 
             for pathways in pathway_table[currenttarmet][plen]:
                 for reactions in pathways:
                     all_reactions_involved.append(reactions)
-        find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currenttarmet,
-                                              seed_metabolites, namemap, G)
-        most_different_paths, only_source_to_target = find_pathways_starting_from_source(source_metabolites, pathway_table,
-                                                                                         currenttarmet, cutoff, G)
+        exchange_candidates_inverted_dict = find_pathways_involving_exchange_mets(number_of_xml,
+                                                                                  pathway_table,
+                                                                                  currenttarmet,
+                                                                                  seed_metabolites,
+                                                                                  namemap, G)
+        most_different_paths, only_source_to_target = find_pathways_starting_from_source(source_metabolites,
+                                                                                         pathway_table,
+                                                                                         currenttarmet,
+                                                                                         cutoff, G)
         # Two most different paths
         if most_different_paths:
             print('Number of branched pathways from source whose size <=',
@@ -397,12 +407,15 @@ def find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currentt
 
     Returns
     -------
-    None
+    exchange_candidates_inverted_dict : dict
+        Dictionary containing the number of times an exchange reaction is
+        repeated
 
     """
     pred = G.predecessors
     succ = G.successors
     exchange_reactions = []
+    exchange_candidates_inverted_dict = {}
     if number_of_xml > 1:
         for plen in pathway_table[currenttarmet]:
             for pathways in pathway_table[currenttarmet][plen]:
@@ -413,7 +426,7 @@ def find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currentt
                         if 'ER' in reactions:
                             exchange_reactions.append(reactions)
         exchange_candidates = Counter(exchange_reactions)
-        exchange_candidates_inverted_dict = {}
+
         for keys, values in exchange_candidates.items():
             exchange_candidates_inverted_dict[values] = \
                 exchange_candidates_inverted_dict.get(values, [])
@@ -434,6 +447,7 @@ def find_pathways_involving_exchange_mets(number_of_xml, pathway_table, currentt
                 print(namemap[rxns], list(pred(rxns)), list(succ(rxns)))
         else:
             print('No metabolite exchanged')
+    return exchange_candidates_inverted_dict
 
 
 def find_jaccard_between_paths(only_source_to_target):
@@ -475,15 +489,15 @@ def find_jaccard_between_paths(only_source_to_target):
 def execute_all_codes():
     """
     This function executes all the codes including constructing graphs and executing metquest.
-    
+
     Parameters
     ----------
     None
-    
+
     Returns
     -------
     None
-    
+
     """
     try:
         inputfoldername = sys.argv[1]
@@ -492,64 +506,76 @@ def execute_all_codes():
 
     if '~' in inputfoldername:
         inputfoldername = os.path.expanduser(inputfoldername)
-    list_of_files = os.listdir(inputfoldername)
-    for foldernames in list_of_files:
-        # To go through only folders
-        if os.path.isdir(os.path.join(inputfoldername, foldernames)):
-            current_evaluation_folder = os.path.join(
-                inputfoldername, foldernames)
-            number_of_files_in_current_folder = os.listdir(
-                current_evaluation_folder)
-            number_of_xml = len(
-                [filenames for filenames in number_of_files_in_current_folder if '.xml' in filenames])
-            print('Currently evaluating files in', foldernames)
-            print('Number of networks', number_of_xml)
-            G, namemap = create_graph(
-                current_evaluation_folder, number_of_xml)
-            for files in os.listdir('.'):
-                if files.endswith('.txt'):
-                    if files.startswith('seed'):
-                        with open(files, 'r') as seedfile:
-                            seedmetslist = seedfile.read().splitlines()
-                        seed_metabolites = set(seedmetslist)
-                    elif files.startswith('source'):
-                        with open(files, 'r') as sourcefile:
-                            source_metabolites = sourcefile.read().splitlines()
-                    elif files.startswith('target'):
-                        with open(files, 'r') as targetfile:
-                            # Target metabolites can be multiple values
-                            targetmetabolites = targetfile.read().splitlines()
-                    elif files.startswith('cutoff'):
-                        with open(files, 'r') as cutofffile:
-                            cutoff_list = cutofffile.read().splitlines()  # Cutoff can be multiple values
-            for mets in source_metabolites:
-                seed_metabolites.add(mets)
-            metfoundingraph = True
-            for metabs in seed_metabolites:
-                if metabs not in G:
-                    print(metabs, 'not in G. MetQuest will not be executed')
-                    print('Please check the metabolite names')
-                    metfoundingraph = False
-                    break
-            for metabs in targetmetabolites:
-                if metabs not in G:
-                    print(metabs, 'not in G. MetQuest will not be executed')
-                    print('Please check the metabolite names')
-                    metfoundingraph = False
-                    break
-            if metfoundingraph:
-                folder_to_create = 'Results/'
-                if not os.path.exists(folder_to_create):
-                    os.makedirs(folder_to_create)
-                for currenttarmet in targetmetabolites:  # multiple target mets
-                    for cutoff in cutoff_list:  # multiple cutoffs
-                        pathway_table, cyclic_pathways, scope = find_pathways(
-                            G, seed_metabolites, int(cutoff))
-                        print_summary(scope, currenttarmet, pathway_table, cutoff, cyclic_pathways,
-                                      namemap, source_metabolites, folder_to_create,
-                                      seed_metabolites, number_of_xml, G)
-                        write_output_to_file(pathway_table, currenttarmet, cutoff,
-                                             cyclic_pathways, folder_to_create,
-                                             namemap, source_metabolites, G)
-                print('\n')
-            os.chdir('../')
+    list_of_files = []
+    try:
+        list_of_files = next(os.walk(inputfoldername))[1]
+        if list_of_files:
+        #    list_of_files = os.listdir(inputfoldername)   
+            for foldernames in list_of_files:
+                
+                # To go through only folders
+                if os.path.isdir(os.path.join(inputfoldername, foldernames)):
+                    current_evaluation_folder = os.path.join(
+                        inputfoldername, foldernames)
+                    number_of_files_in_current_folder = os.listdir(
+                        current_evaluation_folder)
+                    number_of_xml = len(
+                        [filenames for filenames in number_of_files_in_current_folder if '.xml' in filenames])
+                    print('Currently evaluating files in', foldernames)
+                    print('Number of networks', number_of_xml)
+                    G, namemap = create_graph(
+                        current_evaluation_folder, number_of_xml)
+                    for files in os.listdir('.'):
+                        if files.endswith('.txt'):
+                            if files.startswith('seed'):
+                                with open(files, 'r') as seedfile:
+                                    seedmetslist = seedfile.read().splitlines()
+                                seed_metabolites = set(seedmetslist)
+                            elif files.startswith('source'):
+                                with open(files, 'r') as sourcefile:
+                                    source_metabolites = sourcefile.read().splitlines()
+                            elif files.startswith('target'):
+                                with open(files, 'r') as targetfile:
+                                    # Target metabolites can be multiple values
+                                    targetmetabolites = targetfile.read().splitlines()
+                            elif files.startswith('cutoff'):
+                                with open(files, 'r') as cutofffile:
+                                    cutoff_list = cutofffile.read().splitlines()  # Cutoff can be multiple values
+                    for mets in source_metabolites:
+                        seed_metabolites.add(mets)
+                    metfoundingraph = True
+                    for metabs in seed_metabolites:
+                        if metabs not in G:
+                            print(metabs, 'not in G. MetQuest will not be executed')
+                            print('Please check the metabolite names')
+                            metfoundingraph = False
+                            break
+                    for metabs in targetmetabolites:
+                        if metabs not in G:
+                            print(metabs, 'not in G. MetQuest will not be executed')
+                            print('Please check the metabolite names')
+                            metfoundingraph = False
+                            break
+                    if metfoundingraph:
+                        folder_to_create = 'Results/'
+                        if not os.path.exists(folder_to_create):
+                            os.makedirs(folder_to_create)
+                        for currenttarmet in targetmetabolites:  # multiple target mets
+                            for cutoff in cutoff_list:  # multiple cutoffs
+                                pathway_table, cyclic_pathways, scope = find_pathways(
+                                    G, seed_metabolites, int(cutoff))
+                                print_summary(scope, currenttarmet, pathway_table, cutoff, cyclic_pathways,
+                                              namemap, source_metabolites, seed_metabolites,
+                                              number_of_xml, G)
+                                write_output_to_file(pathway_table, currenttarmet, cutoff,
+                                                     cyclic_pathways, folder_to_create,
+                                                     namemap, source_metabolites, G)
+                        print('\n')
+                    os.chdir('../')
+        else:
+            print('Folder with data files not found')
+            print('Please follow the prescribed folder format')
+    except:
+        print('Path name is incorrect. Please check the path name')
+
+        
