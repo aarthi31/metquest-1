@@ -74,7 +74,7 @@ def run_this_example():
                 assert currenttarmet in cyclic_pathways
                 execute_metquest.print_summary(scope, currenttarmet, pathway_table, cutoff,
                                                cyclic_pathways, namemap, source_metabolites,
-                                               folder_to_create, seed_metabolites, number_of_xml, G)
+                                               seed_metabolites, number_of_xml, G)
 
 
 if __name__ == '__main__':

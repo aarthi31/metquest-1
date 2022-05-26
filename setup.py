@@ -10,7 +10,7 @@ requirements = [
 ]
 
 try:
-    with open('README.md') as handle:
+    with open('README.rst') as handle:
         description = handle.read()
 except:
     description = ''
@@ -20,8 +20,12 @@ datafiles = [(d, [os.path.join(d,f) for f in files])
 
 setup(
     name='metquest',
-    version='0.1.27',
+    version='0.1.31',
     packages=find_packages(),
+    project_urls={
+        'Source': 'https://github.com/RamanLab/metquest'
+    },
+
     install_requires=requirements,
     setup_requires=[],
     scripts=['bin/metquest.sh'],
@@ -29,9 +33,10 @@ setup(
     author_email='aarthiravikrishnan@gmail.com',
     description='MetQuest: Enumerating all possible biosynthetic pathways in metabolic networks ',
     long_description=description,
-    license="LGPL/GPL v2+",
+    license='LGPL/GPL v2+',
     keywords='metabolism biology graph-theory pathways',
     classifiers=[
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU Lesser General Public License v2'
             ' or later (LGPLv2+)',

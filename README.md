@@ -1,4 +1,4 @@
-﻿Welcome to MetQuest\'s documentation!
+Welcome to MetQuest\'s documentation!
 =====================================
 
 MetQuest is a dynamic programming based algorithm for identifying all
@@ -19,8 +19,12 @@ Authors
 -   Meghana Nasre
 -   [Karthik Raman](https://github.com/karthikraman)
 
+
 Acknowledgments
 ===============
+
+
+
 
 * Indian Institute of Technology Madras grant ERP/1314/004/RESF/KARH to [Karthik Raman](https://github.com/karthikraman)
 * INSPIRE fellowship, Department of Science and Technology, Government of India to [Aarthi Ravikrishnan](https://github.com/aarthi31).
@@ -111,8 +115,8 @@ python3 execute_metquest.py <path containing the input folder>
 ### From python console
 
 ``` 
->>>import metquest
->>>metquest.execute_all_codes()
+>>> import metquest
+>>> metquest.execute_all_codes()
 ```
 
 When prompted, enter the path containing the folder with all the data files
@@ -122,9 +126,8 @@ When prompted, enter the path containing the folder with all the data files
 In the python console, type the following
 
 ```
->>>import metquest
->>>metquest.example.run_this_example()
+>>> import metquest
+>>> metquest.example.run_this_example()
 ```
 
 This will run the example files.
-
