@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 import math
 import itertools
-from time import clock
+import time
 from numpy import prod
 from networkx import get_node_attributes
 from metquest.guided_bfs import forward_pass
@@ -51,7 +51,7 @@ def find_pathways(G, seed_mets_input, path_len_cutoff, *args):
         pathway_table, cyclic_pathways
     pathway_table = {}
     cyclic_pathways = {}
-    tic = clock()
+    tic = time.perf_counter()
     #  Setting the cutoff for maximum number of pathways
     if args:
         for maxnumpath_input in args:
@@ -102,7 +102,7 @@ def find_pathways(G, seed_mets_input, path_len_cutoff, *args):
                 if metssucc not in seedmets:
                     pathway_table[metssucc][1].append(set([rxns]))
 
-	# For filling values from the second column
+    # For filling values from the second column
     for currentcolumnidx in range(2, path_len_cutoff+1):
         for rxns in status_dict:  # rxns_to_visit:
             # To eliminate seed metabolites, whose column value
@@ -120,7 +120,7 @@ def find_pathways(G, seed_mets_input, path_len_cutoff, *args):
                     else:
                         _second_round_calculations(
                             mets_needed, currentcolumnidx, rxns, val)
-    toc = clock()
+    toc = time.perf_counter()
     timetaken = toc - tic
     print('Time taken', timetaken)
     return pathway_table, cyclic_pathways, scope
