@@ -1,4 +1,4 @@
-﻿Welcome to MetQuest\'s documentation!
+Welcome to MetQuest\'s documentation!
 =====================================
 
 MetQuest is a dynamic programming based algorithm for identifying all
@@ -8,20 +8,32 @@ reconstructions, set of seed, source and target metabolites and the
 pathway length cut-off. MetQuest is compatible with Python 3 and is
 OS-independent. An extensive documentation can be found [here](http://metquestdoc.readthedocs.io/).
 
+Citation 
+========
+Ravikrishnan, A., Nasre, M. & Raman, K. Enumerating all possible biosynthetic pathways in metabolic networks. *Sci. Rep.* **8**:9932 (2018).
+
 Authors
 =======
 
 -   [Aarthi Ravikrishnan](https://github.com/aarthi31)
 -   Meghana Nasre
--   [Karthik Raman](https://github.com/ramanlab)
+-   [Karthik Raman](https://github.com/karthikraman)
 
 
 Acknowledgments
 ===============
 
-This work was supported by the Indian Institute of Technology Madras
-grant ERP/1314/004/RESF/KARH to KR and the INSPIRE fellowship,
-Department of Science and Technology, Government of India to AR.
+
+
+
+* Indian Institute of Technology Madras grant ERP/1314/004/RESF/KARH to [Karthik Raman](https://github.com/karthikraman)
+* INSPIRE fellowship, Department of Science and Technology, Government of India to [Aarthi Ravikrishnan](https://github.com/aarthi31).
+* High Performance Computing Environment, P G Senapathy Centre for Computing Resources, IIT Madras
+* [Initiative for Biological Systems Engineering](https://ibse.iitm.ac.in/)
+* [Robert Bosch Centre for Data Science and Artificial Intelligence (RBCDSAI)](https://rbcdsai.iitm.ac.in/)
+
+<img title="IBSE logo" src="https://github.com/RBC-DSAI-IITM/rbc-dsai-iitm.github.io/blob/master/images/IBSE_logo.png" height="200" width="200"><img title="RBC-DSAI logo" src="https://github.com/RBC-DSAI-IITM/rbc-dsai-iitm.github.io/blob/master/images/logo.jpg" height="200" width="351">
+
 
 Installation
 ------------
